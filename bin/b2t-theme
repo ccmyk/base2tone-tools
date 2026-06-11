@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent.parent
+
+SCHEME_DIR  = ROOT / "vendor/Base2Tone/db/schemes"
+TEMPLATE_DIR = ROOT / "templates"
+GENERATED_DIR = ROOT / "generated"
+
+PALETTE_PATTERN = re.compile(
+    r"""(?mx)
+    ^\s*
+    base([ABCD])([0-7])
+    \s*:\s*
+    ['"]?
+    ([0-9a-fA-F]{6})
+    ['"]?
+    \s*$
+    """
+)
+
+PLACEHOLDER_PATTERN = re.compile(
+    r"\{\{\s*([ABCD][0-7])\s*\}\}"
+)
+
+ANY_PLACEHOLDER_PATTERN = re.compile(
+    r"\{\{\s*([^{}]+?)\s*\}\}"
+)
+
+EXPECTED_COORDINATES = tuple(
+    f"{bank}{index}"
+    for bank in "ABCD"
+    for index in range(8)
+)
+
+
+class ThemeError(Exception):
+    """Raised for expected palette or template errors."""
+
+
+def normalize_scheme(value: str) -> str:
+    name = Path(value).name
+
+    for suffix in (".yaml", ".yml"):
+        if name.endswith(suffix):
+            name = name.removesuffix(suffix)
+
+    name = name.removeprefix("base2tone-")
+    name = name.removesuffix("-dark")
+    name = name.removesuffix("-light")
+
+    return name
+
+
+def get_scheme_path(scheme: str) -> Path:
+    name = normalize_scheme(scheme)
+    path = SCHEME_DIR / f"base2tone-{name}.yml"
+
+    if not path.is_file():
+        raise ThemeError(f"Scheme not found: {path}")
+
+    return path
+
+
+def load_palette(scheme: str) -> tuple[str, Path, dict[str, str]]:
+    path = get_scheme_path(scheme)
+    name = normalize_scheme(scheme)
+    text = path.read_text(encoding="utf-8")
+
+    palette: dict[str, str] = {}
+
+    for bank, index, value in PALETTE_PATTERN.findall(text):
+        coordinate = f"{bank}{index}"
+
+        if coordinate in palette:
+            raise ThemeError(
+                f"Duplicate coordinate {coordinate} in {path}"
+            )
+
+        palette[coordinate] = f"#{value.lower()}"
+
+    missing = [
+        coordinate
+        for coordinate in EXPECTED_COORDINATES
+        if coordinate not in palette
+    ]
+
+    unexpected = sorted(
+        coordinate
+        for coordinate in palette
+        if coordinate not in EXPECTED_COORDINATES
+    )
+
+    if missing:
+        raise ThemeError(
+            "Missing coordinates in "
+            f"{path}: {', '.join(missing)}"
+        )
+
+    if unexpected:
+        raise ThemeError(
+            "Unexpected coordinates in "
+            f"{path}: {', '.join(unexpected)}"
+        )
+
+    if len(palette) != 32:
+        raise ThemeError(
+            f"Expected 32 coordinates in {path}; found {len(palette)}"
+        )
+
+    return name, path, palette
+
+
+def render_template(
+    template_path: Path,
+    palette: dict[str, str],
+) -> str:
+    text = template_path.read_text(encoding="utf-8")
+
+    def replace(match: re.Match[str]) -> str:
+        coordinate = match.group(1)
+        return palette[coordinate]
+
+    rendered = PLACEHOLDER_PATTERN.sub(replace, text)
+
+    unresolved = sorted(
+        set(ANY_PLACEHOLDER_PATTERN.findall(rendered))
+    )
+
+    if unresolved:
+        raise ThemeError(
+            f"Unknown placeholders in {template_path}: "
+            + ", ".join(f"{{{{{name}}}}}" for name in unresolved)
+        )
+
+    return rendered
+
+
+def template_files() -> list[Path]:
+    if not TEMPLATE_DIR.is_dir():
+        return []
+
+    return sorted(
+        path
+        for path in TEMPLATE_DIR.rglob("*")
+        if path.is_file()
+        and not path.name.startswith(".")
+        and path.name != ".gitkeep"
+    )
+
+
+def write_atomic(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(content, encoding="utf-8")
+    temporary.replace(path)
+
+
+def command_list() -> int:
+    if not SCHEME_DIR.is_dir():
+        raise ThemeError(
+            f"Scheme directory not found: {SCHEME_DIR}"
+        )
+
+    schemes = sorted(
+        path.stem.removeprefix("base2tone-")
+        for path in SCHEME_DIR.glob("base2tone-*.yml")
+    )
+
+    for scheme in schemes:
+        print(scheme)
+
+    return 0
+
+
+def command_validate(scheme: str) -> int:
+    name, path, palette = load_palette(scheme)
+
+    print(f"Scheme:      {name}")
+    print(f"Source:      {path}")
+    print(f"Coordinates: {len(palette)}")
+    print("Status:      valid")
+
+    return 0
+
+
+def command_build(scheme: str) -> int:
+    name, source, palette = load_palette(scheme)
+    templates = template_files()
+
+    if not templates:
+        raise ThemeError(
+            f"No templates found beneath {TEMPLATE_DIR}"
+        )
+
+    output_root = GENERATED_DIR / name
+
+    print(f"Scheme: {name}")
+    print(f"Source: {source}")
+
+    for template_path in templates:
+        relative_path = template_path.relative_to(TEMPLATE_DIR)
+        output_path = output_root / relative_path
+
+        rendered = render_template(template_path, palette)
+        write_atomic(output_path, rendered)
+
+        print(f"Generated: {output_path.relative_to(ROOT)}")
+
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="b2t-theme",
+        description=(
+            "Compile Base2Tone coordinates directly into "
+            "tool-native templates."
+        ),
+    )
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+    )
+
+    subparsers.add_parser(
+        "list",
+        help="list available Base2Tone schemes",
+    )
+
+    validate_parser = subparsers.add_parser(
+        "validate",
+        help="validate one Base2Tone scheme",
+    )
+    validate_parser.add_argument("scheme")
+
+    build_parser = subparsers.add_parser(
+        "build",
+        help="render all templates for one scheme",
+    )
+    build_parser.add_argument("scheme")
+
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        if args.command == "list":
+            return command_list()
+
+        if args.command == "validate":
+            return command_validate(args.scheme)
+
+        if args.command == "build":
+            return command_build(args.scheme)
+
+        parser.error(f"Unknown command: {args.command}")
+
+    except ThemeError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
