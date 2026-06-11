@@ -1,0 +1,3 @@
+[submodule "vendor/Base2Tone"]
+	path = vendor/Base2Tone
+	url = https://github.com/atelierbram/Base2Tone.git
