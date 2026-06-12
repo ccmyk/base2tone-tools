@@ -231,3 +231,22 @@ does not generate Neovim highlight groups or Lualine colors.
 
 Validation confirms that both the upstream colorscheme and its matching
 Lualine theme exist and load successfully in headless Neovim.
+
+### Fastfetch
+
+Module:
+
+    tools/fastfetch/
+
+Output:
+
+    generated/current/fastfetch/config.jsonc
+
+The module owns the complete Fastfetch JSONC configuration while preserving
+the user's module list and command-based system summaries. Direct Base2Tone
+coordinates control keys, titles, output text, structural separators,
+percentage bars, and threshold states.
+
+Validation loads the generated configuration with Fastfetch using a minimal
+temporary structure so all-scheme testing does not repeatedly execute the
+configured system-inspection commands.

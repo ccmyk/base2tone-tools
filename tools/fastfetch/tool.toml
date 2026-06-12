@@ -1,0 +1,4 @@
+name = "fastfetch"
+template = "template.jsonc"
+output = "fastfetch/config.jsonc"
+validator = "validate.py"
