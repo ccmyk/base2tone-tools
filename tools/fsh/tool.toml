@@ -1,0 +1,4 @@
+name = "fsh"
+template = "template.ini"
+output = "fsh/base2tone.ini"
+validator = "validate.py"

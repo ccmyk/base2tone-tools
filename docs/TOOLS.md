@@ -103,9 +103,25 @@ Existing search commands, previews, layouts, and key bindings remain separate.
 Validation sources the generated Zsh fragment and invokes fzf non-interactively
 with `--filter`.
 
-### Remaining planned modules
+### fast-syntax-highlighting
 
-- fast-syntax-highlighting
+Module:
+
+    tools/fsh/
+
+Output:
+
+    generated/current/fsh/base2tone.ini
+
+The module produces a complete native INI theme. Each syntax field occupies its
+own line beside the original Base2Tone coordinate.
+
+Validation checks the complete section and field structure along with supported
+foreground, background, and text-style syntax without changing the user's
+active shell theme.
+
+### Remaining planned module
+
 - Yazi
 
 ## Phase 4: Terminal workspace
