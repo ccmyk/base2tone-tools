@@ -111,17 +111,17 @@ succeeds.
 Testing all schemes uses temporary directories and does not retain hundreds of
 generated files.
 
-## Planned commands
+## Commands
 
-Initial commands:
+Implemented commands:
 
     b2t-theme list
     b2t-theme validate <scheme>
     b2t-theme build <scheme>
-
-Later commands:
-
     b2t-theme test
+
+Planned lifecycle commands:
+
     b2t-theme apply <scheme>
     b2t-theme current
     b2t-theme status

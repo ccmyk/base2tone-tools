@@ -158,7 +158,11 @@ The entire replacement build must succeed before `generated/current/` changes.
 
 ## All-scheme testing
 
-Testing every scheme should use temporary directories:
+The command:
+
+    b2t-theme test
+
+tests every scheme using temporary directories:
 
     /tmp/base2tone-tools-.../
 

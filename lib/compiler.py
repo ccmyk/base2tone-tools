@@ -61,6 +61,7 @@ class ToolModule:
     output: Path
     manifest: Path
     postprocess: Path | None
+    validator: Path | None
 
 
 @dataclass(frozen=True)
@@ -240,6 +241,23 @@ def load_module(manifest: Path) -> ToolModule:
                 f"{manifest}: postprocess hook not found: {postprocess}"
             )
 
+    validator_value = data.get("validator")
+    validator: Path | None = None
+
+    if validator_value is not None:
+        validator_relative = safe_relative_path(
+            validator_value,
+            field="validator",
+            manifest=manifest,
+        )
+
+        validator = manifest.parent / validator_relative
+
+        if not validator.is_file():
+            raise ThemeError(
+                f"{manifest}: validator hook not found: {validator}"
+            )
+
     return ToolModule(
         name=name,
         directory=manifest.parent,
@@ -247,6 +265,7 @@ def load_module(manifest: Path) -> ToolModule:
         output=output_relative,
         manifest=manifest,
         postprocess=postprocess,
+        validator=validator,
     )
 
 
@@ -390,6 +409,51 @@ def run_postprocess(
     return tuple(outputs)
 
 
+def run_validator(
+    module: ToolModule,
+    rendered_output: Path,
+    destination: Path,
+) -> None:
+    if module.validator is None:
+        return
+
+    module_name = f"b2t_tool_{module.name}_validator"
+
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        module.validator,
+    )
+
+    if spec is None or spec.loader is None:
+        raise ThemeError(
+            f"Could not load validator hook: {module.validator}"
+        )
+
+    validator_module = importlib.util.module_from_spec(spec)
+
+    try:
+        spec.loader.exec_module(validator_module)
+    except Exception as error:
+        raise ThemeError(
+            f"Could not import validator hook "
+            f"{module.validator}: {error}"
+        ) from error
+
+    validate_hook = getattr(validator_module, "validate", None)
+
+    if not callable(validate_hook):
+        raise ThemeError(
+            f"{module.validator}: expected callable validate()"
+        )
+
+    try:
+        validate_hook(rendered_output, destination)
+    except Exception as error:
+        raise ThemeError(
+            f"Validation failed for {module.name}: {error}"
+        ) from error
+
+
 def render_modules(
     palette: Palette,
     modules: tuple[ToolModule, ...],
@@ -412,10 +476,40 @@ def render_modules(
             )
         )
 
+        run_validator(
+            module,
+            output,
+            destination,
+        )
+
     write_atomic(destination / "scheme", f"{palette.name}\n")
     outputs.append(destination / "scheme")
 
     return tuple(outputs)
+
+
+def test_all_schemes() -> tuple[str, ...]:
+    modules = discover_modules()
+    passed: list[str] = []
+
+    with tempfile.TemporaryDirectory(
+        prefix="base2tone-tools-test-"
+    ) as temporary_directory:
+        temporary_root = Path(temporary_directory)
+
+        for scheme in list_schemes():
+            palette = load_palette(scheme)
+            destination = temporary_root / palette.name
+
+            render_modules(
+                palette,
+                modules,
+                destination,
+            )
+
+            passed.append(palette.name)
+
+    return tuple(passed)
 
 
 def build_active(scheme: str) -> BuildResult:

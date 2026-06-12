@@ -1,3 +1,4 @@
 name = "eza"
 template = "template.yml"
 output = "eza/theme.yml"
+validator = "validate.py"

@@ -42,11 +42,12 @@ Implement:
 
 ### Launcher
 
-Implement:
+Implemented:
 
     list
     validate
     build
+    test
 
 ## Phase 2: Filesystem tools
 
