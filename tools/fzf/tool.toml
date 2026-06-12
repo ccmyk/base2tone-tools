@@ -1,0 +1,4 @@
+name = "fzf"
+template = "template.zsh"
+output = "fzf/colors.zsh"
+validator = "validate.py"

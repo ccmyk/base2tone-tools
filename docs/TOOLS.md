@@ -84,9 +84,27 @@ LS_COLORS expression.
 
 ## Phase 3: Shell interaction
 
-Planned modules:
+### fzf
 
-- fzf
+Module:
+
+    tools/fzf/
+
+Output:
+
+    generated/current/fzf/colors.zsh
+
+The module appends only direct Base2Tone color mappings to
+`FZF_DEFAULT_OPTS`. Each fzf field occupies its own template line so the
+assigned coordinate remains visible and easy to edit.
+
+Existing search commands, previews, layouts, and key bindings remain separate.
+
+Validation sources the generated Zsh fragment and invokes fzf non-interactively
+with `--filter`.
+
+### Remaining planned modules
+
 - fast-syntax-highlighting
 - Yazi
 
