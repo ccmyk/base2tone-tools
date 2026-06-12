@@ -1,289 +1,143 @@
 # Tool Roadmap
 
-## Principles
+## Module contract
 
-Each supported tool receives its own readable template.
+Each supported tool owns:
 
-A tool template must:
+    tools/<name>/
+    ├── README.md
+    ├── template.<native-extension>
+    └── tool.toml
 
-- use the application's current native schema;
-- expose direct `{{A0}}..{{D7}}` assignments;
-- document important mapping decisions;
-- avoid a shared semantic alias layer;
-- generate a complete valid file for the intended integration method.
+Optional hooks are added only when required by the tool.
 
-## Phase 4: Filesystem tools
+The native template maps application fields directly to Base2Tone coordinates.
+
+## Active output layout
+
+Normal builds write only beneath:
+
+    generated/current/
+
+Examples:
+
+    generated/current/eza/theme.yml
+    generated/current/vivid/theme.yml
+    generated/current/vivid/ls-colors.zsh
+    generated/current/fzf/colors.zsh
+    generated/current/yazi/theme.toml
+
+## Phase 1: Core
+
+### Shared compiler
+
+Implement:
+
+- scheme discovery;
+- palette parsing;
+- exact 32-coordinate validation;
+- module discovery;
+- placeholder substitution;
+- atomic active-output replacement.
+
+### Launcher
+
+Implement:
+
+    list
+    validate
+    build
+
+## Phase 2: Filesystem tools
 
 ### eza
 
+Module:
+
+    tools/eza/
+
 Output:
 
-    generated/<scheme>/eza.yml
+    generated/current/eza/theme.yml
 
-Purpose:
+Validation:
 
-- native eza file listing colors;
-- file kinds;
-- permissions;
-- sizes;
-- users and groups;
-- links;
-- Git state;
-- repository state;
-- file categories;
-- dates and metadata.
-
-Why it comes first:
-
-eza exposes many visible fields and provides a strong test of direct coordinate
-mapping and visual hierarchy.
+- isolate `EZA_CONFIG_DIR`;
+- unset `LS_COLORS`;
+- unset `EZA_COLORS`;
+- run eza against the rendered theme.
 
 ### vivid
 
-Output:
+Module:
 
-    generated/<scheme>/vivid.yml
+    tools/vivid/
 
-Purpose:
+Outputs:
 
-- define file types and filesystem states;
-- compile a scheme-specific `LS_COLORS` value;
-- support compatible tools beyond one listing command.
+    generated/current/vivid/theme.yml
+    generated/current/vivid/ls-colors.zsh
 
-Why it follows eza:
+Vivid requires post-processing because it compiles its YAML theme into an
+LS_COLORS expression.
 
-eza and vivid overlap in the filesystem concepts they represent, but use
-different schemas and integration models. Comparing both will reveal which
-mappings should remain similar and which need tool-specific treatment.
+## Phase 3: Shell interaction
 
-### LS_COLORS integration
+Planned modules:
 
-Possible output:
+- fzf
+- fast-syntax-highlighting
+- Yazi
 
-    generated/<scheme>/ls-colors.zsh
+## Phase 4: Terminal workspace
 
-Purpose:
+Planned modules:
 
-- export the result produced by vivid;
-- provide a reusable shell fragment;
-- allow compatible tools to inherit the generated file classification colors.
+- tmux
+- Zellij
+- Starship
 
-## Phase 5: Shell interaction tools
-
-### fzf
-
-Output:
-
-    generated/<scheme>/fzf.zsh
-
-Fields include:
-
-- background;
-- foreground;
-- selected row;
-- highlights;
-- borders;
-- prompt;
-- pointer;
-- marker;
-- spinner;
-- headers and labels.
-
-### fast-syntax-highlighting
-
-Output:
-
-    generated/<scheme>/fast-syntax-highlighting.ini
-
-Fields include:
-
-- commands;
-- aliases;
-- functions;
-- paths;
-- options;
-- quoted strings;
-- variables;
-- redirections;
-- operators;
-- brackets;
-- comments;
-- invalid tokens.
-
-### Yazi
-
-Output:
-
-    generated/<scheme>/yazi-theme.toml
-
-Fields include:
-
-- manager interface;
-- selected and hovered rows;
-- status modes;
-- progress states;
-- permissions;
-- inputs and selection dialogs;
-- tasks;
-- help;
-- file classification.
-
-## Phase 6: Terminal workspace tools
-
-### tmux
-
-Output:
-
-    generated/<scheme>/tmux.conf
-
-Initial strategy:
-
-Generate palette variables first rather than replacing a user's complete tmux
-layout.
-
-Possible values:
-
-    @b2t_a0
-    @b2t_a1
-    ...
-    @b2t_d7
-
-A later optional template may generate a complete reference status-line theme.
-
-### Zellij
-
-Output:
-
-    generated/<scheme>/zellij-theme.kdl
-
-Zellij requires a limited terminal-style theme containing:
-
-- foreground;
-- background;
-- black;
-- red;
-- green;
-- yellow;
-- blue;
-- magenta;
-- cyan;
-- white;
-- orange.
-
-Because this schema compresses 32 coordinates into a smaller named set, the
-template must clearly document every coordinate choice.
-
-### Starship
-
-Output:
-
-    generated/<scheme>/starship-palette.toml
-
-Initial strategy:
-
-Generate only a named coordinate palette:
+Starship should expose the original coordinate names:
 
     b2t_a0..b2t_a7
     b2t_b0..b2t_b7
     b2t_c0..b2t_c7
     b2t_d0..b2t_d7
 
-The user's prompt layout remains separate and may refer directly to those
-coordinate names.
+The user's prompt layout remains separate.
 
-## Phase 7: Git and document tools
+## Phase 5: Git and documents
 
-### Lazygit
+Planned modules:
 
-Output:
+- Lazygit
+- Delta
+- Glow
+- bat
 
-    generated/<scheme>/lazygit-theme.yml
+Glow will be recreated from its current native schema.
 
-Integration may use a marked block or a standalone generated configuration,
-depending on what Lazygit supports cleanly.
+bat should use maintained upstream Base2Tone tmTheme files where appropriate
+instead of generating an incomplete syntax theme.
 
-### Delta
+## Phase 6: Monitoring and information
 
-Output:
+Planned modules:
 
-    generated/<scheme>/delta.gitconfig
+- Bottom
+- Fastfetch
 
-Fields include:
+## Later lifecycle work
 
-- line numbers;
-- additions;
-- deletions;
-- emphasized additions and deletions;
-- hunk headers;
-- file names and decorations.
+After generation and validation are stable:
 
-### Glow
+- all-scheme temporary testing;
+- dotfiles installation;
+- current-theme reporting;
+- reload hooks;
+- dry-run support;
+- uninstall or restore support.
 
-Output:
+## Separate projects
 
-    generated/<scheme>/glow-style.json
-
-Glow will be rebuilt from its documented style schema rather than copied from
-the old project.
-
-Special care is required because code block backgrounds and syntax coloring may
-not render like full-width editor panels.
-
-### bat
-
-Initial strategy:
-
-Prefer upstream Base2Tone bat themes when available.
-
-The project may copy or select an upstream `.tmTheme` rather than generate an
-incomplete syntax theme.
-
-## Phase 8: Monitoring and information tools
-
-### Bottom
-
-Output:
-
-    generated/<scheme>/bottom.toml
-
-Fields include:
-
-- borders;
-- selected borders;
-- text and headers;
-- CPU series;
-- memory series;
-- network series;
-- battery states;
-- tables and widgets.
-
-### Fastfetch
-
-Output:
-
-    generated/<scheme>/fastfetch.jsonc
-
-Fields include:
-
-- keys;
-- output;
-- title;
-- separators;
-- logo colors.
-
-The compiler may provide derived RGB channel values for applications that
-require terminal escape sequences rather than direct hexadecimal strings.
-
-## Later candidates
-
-Potential future templates include:
-
-- ripgrep color fragments;
-- fd integrations through `LS_COLORS`;
-- Git UI tools;
-- shell completion menus;
-- process monitors;
-- terminal emulators without maintained upstream Base2Tone themes;
-- documentation previews and palette comparison reports.
-
-Zed and Warp are separate projects and are not part of this repository.
+Zed and Warp remain outside this repository.

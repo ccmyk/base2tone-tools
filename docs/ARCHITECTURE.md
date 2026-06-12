@@ -1,215 +1,198 @@
 # Architecture
 
-## Purpose
+## Core design
 
-Base2Tone Tools converts an upstream Base2Tone scheme into native theme or
-configuration files for command-line applications.
+Base2Tone Tools uses three layers:
 
-The project preserves the original 32-coordinate Base2Tone vocabulary:
+    thin launcher
+          ↓
+    shared compiler
+          ↓
+    independent tool modules
 
-    A0..A7
-    B0..B7
-    C0..C7
-    D0..D7
-
-It does not introduce a global semantic color layer.
+The layers have deliberately narrow responsibilities.
 
 ## Data flow
 
-    upstream Base2Tone scheme YAML
-            ↓
-    parse all 32 coordinates
-            ↓
-    validate the palette
-            ↓
-    render one template per tool
-            ↓
-    write files under generated/
-            ↓
-    optionally install selected outputs
+    vendor/Base2Tone scheme YAML
+                ↓
+    parse and validate A0..D7
+                ↓
+    discover tools/*/tool.toml
+                ↓
+    render each module's native template
+                ↓
+    validate and post-process when required
+                ↓
+    generated/current/
 
-## Source of truth
+Only the active generated scheme is retained during normal operation.
 
-The canonical palette source is:
+## Thin launcher
 
-    vendor/Base2Tone/db/schemes/base2tone-<scheme>.yml
+The launcher lives at:
 
-Generated application themes are not palette sources.
+    bin/b2t-theme
 
-Templates may use upstream application-specific Base2Tone projects as mapping
-references, but those projects do not replace the core scheme YAML.
+It is responsible for:
 
-## Direct-coordinate model
+- command-line argument parsing;
+- selecting the requested operation;
+- calling shared compiler functions;
+- reporting success and errors.
 
-Templates use the original coordinates directly:
+It should not contain:
 
-    {{A0}}
-    {{A1}}
-    {{B4}}
-    {{C7}}
-    {{D5}}
+- tool-specific color mappings;
+- eza-specific configuration construction;
+- vivid-specific LS_COLORS mappings;
+- global semantic aliases.
 
-A template should visibly show the relationship between a tool-native field
-and a Base2Tone coordinate.
+## Shared compiler
+
+The shared compiler lives at:
+
+    lib/compiler.py
+
+It is responsible for:
+
+1. Locating an upstream Base2Tone scheme.
+2. Normalizing scheme names.
+3. Parsing all 32 coordinates.
+4. Rejecting duplicate, missing, or invalid coordinates.
+5. Reading tool manifests.
+6. Replacing direct coordinate placeholders.
+7. Writing generated files atomically.
+8. Building into temporary storage before replacing the active output.
+
+The compiler treats coordinates as identifiers, not semantic roles.
+
+## Tool modules
+
+Each supported tool owns one directory:
+
+    tools/<name>/
+
+A basic module contains:
+
+    README.md
+    template.<native-extension>
+    tool.toml
+
+The template owns the tool-specific color decisions.
+
+The manifest owns operational metadata only.
 
 Example:
 
-    filekinds:
-      # Ordinary files remain readable without becoming visually dominant.
-      normal:
-        foreground: "{{A6}}"
+    name = "eza"
+    template = "template.yml"
+    output = "eza/theme.yml"
 
-      # Directories require a visible navigational distinction.
-      directory:
-        foreground: "{{B4}}"
+A module may later include narrowly scoped hooks:
 
-The mapping belongs to the tool template.
+    build.py
+    validate.py
+    install.py
+    reload.py
 
-The compiler does not translate through intermediate names such as:
+Hooks are added only when the tool genuinely requires behavior beyond direct
+template substitution.
 
-    background
-    navigation
-    success
-    warning
-    danger
-    accent
+## Direct-coordinate model
 
-## Compiler responsibilities
+Templates use the original Base2Tone coordinates:
 
-The compiler will:
+    {{A0}}
+    {{B4}}
+    {{C6}}
+    {{D5}}
 
-1. Locate a requested Base2Tone scheme.
-2. Parse `baseA0..baseD7`.
-3. Verify that all 32 coordinates exist.
-4. Normalize values into hexadecimal strings.
-5. Replace direct coordinate placeholders in templates.
-6. Write generated files beneath `generated/`.
-7. Report generated files and validation errors.
+The compiler supplies bare six-digit hexadecimal values.
 
-The compiler will not:
+A template requiring a leading number sign writes:
 
-- decide universal semantic meanings for B and D;
-- modify dotfiles during ordinary compilation;
-- silently overwrite application configuration;
-- infer colors from previously generated themes;
-- hand-edit generated output.
+    foreground: "#{{B4}}"
 
-## Template responsibilities
+A format requiring a bare hexadecimal value writes:
 
-Each template will:
+    color: "{{B4}}"
 
-- use the target tool's native schema;
-- map native fields directly to Base2Tone coordinates;
-- include comments explaining important assignments;
-- document unusual contrast or hierarchy decisions;
-- avoid unnecessary assignments where the application's default is preferable;
-- remain independently readable without inspecting compiler source.
+This keeps output syntax under the control of the native template.
 
-## Compilation and installation
+## No semantic layer
 
-Compilation and installation are separate operations.
+The project will not create shared aliases such as:
 
-Compilation writes only beneath:
+    background = A0
+    navigation = B4
+    success = D4
+    warning = D6
+    danger = B2
 
-    generated/
+Those meanings are not guaranteed across all Base2Tone schemes.
 
-Installation may later:
+A coordinate may be chosen for a local purpose inside one tool, but that local
+decision does not become a global definition.
 
-- copy generated files;
-- create symbolic links;
-- update a clearly marked generated section;
-- print manual integration instructions.
+## Generated output
 
-Installation must be explicit.
+Normal output is limited to:
 
-## Generated output layout
+    generated/current/
 
-Generated files will be grouped by scheme:
+Example:
 
-    generated/
-    └── motel/
-        ├── eza.yml
-        ├── vivid.yml
-        ├── fzf.zsh
-        └── ...
+    generated/current/
+    ├── scheme
+    ├── eza/
+    │   └── theme.yml
+    ├── vivid/
+    │   ├── theme.yml
+    │   └── ls-colors.zsh
+    └── ...
 
-This permits multiple schemes to be generated and compared simultaneously.
+The `scheme` file records the active scheme name.
 
-A later active-theme mechanism may point applications at one generated scheme,
-but it is not part of the initial compiler.
+The entire replacement build must succeed before `generated/current/` changes.
 
-## Project layout
+## All-scheme testing
 
-    base2tone-tools/
-    ├── bin/
-    │   └── b2t-theme
-    ├── docs/
-    │   ├── ARCHITECTURE.md
-    │   ├── PALETTE.md
-    │   └── TOOLS.md
-    ├── generated/
-    ├── scripts/
-    │   └── analyze-palettes.py
-    ├── templates/
-    └── vendor/
-        └── Base2Tone/
+Testing every scheme should use temporary directories:
 
-## Implementation phases
+    /tmp/base2tone-tools-.../
 
-### Phase 1: Scaffold and documentation
+The test operation should:
 
-- Create the repository.
-- Add the upstream Base2Tone source.
-- Define project boundaries.
-- Document the palette and tool roadmap.
+1. Render each scheme.
+2. Run each available module validator.
+3. Report pass or failure.
+4. Remove temporary output.
 
-### Phase 2: Compiler foundation
+It should not create a permanent scheme-by-tool output matrix.
 
-- Parse a scheme.
-- Validate all 32 coordinates.
-- Render direct placeholders.
-- Generate files without installing them.
+## Dotfiles boundary
 
-### Phase 3: Palette analysis
+The development project is not a runtime dependency of the dotfiles repository.
 
-- Compare lightness across all coordinates.
-- Compare hue relationships between banks.
-- identify irregular ramps and scheme-specific exceptions.
-- Produce readable analysis reports.
+A future explicit apply operation will:
 
-### Phase 4: Filesystem themes
+1. Render into temporary storage.
+2. Validate every enabled module.
+3. Stop without touching dotfiles on any failure.
+4. Install one active output set into `~/.dotfiles`.
+5. Run optional reload hooks.
+6. Record the active scheme.
 
-- eza
-- vivid
-- `LS_COLORS` integration
+Ordinary `build` operations remain local to this project.
 
-### Phase 5: Shell interaction themes
+## Vendored dependencies
 
-- fzf
-- fast-syntax-highlighting
-- Yazi
+The only current vendored dependency is:
 
-### Phase 6: Terminal workspace themes
+    vendor/Base2Tone
 
-- tmux
-- Zellij
-- Starship
+It is vendored because its scheme files are direct compiler input.
 
-### Phase 7: Git and document tools
-
-- Lazygit
-- Delta
-- Glow
-- bat
-
-### Phase 8: Monitoring and information tools
-
-- Bottom
-- Fastfetch
-
-### Phase 9: Installation lifecycle
-
-- install
-- uninstall
-- status
-- dry-run
+Applications such as eza and vivid are installed consumers and validators.
+Their complete source repositories do not need to be vendored.
