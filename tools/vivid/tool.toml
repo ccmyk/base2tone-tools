@@ -1,0 +1,4 @@
+name = "vivid"
+template = "template.yml"
+output = "vivid/theme.yml"
+postprocess = "build.py"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import re
 import shutil
 import tempfile
@@ -59,6 +60,7 @@ class ToolModule:
     template: Path
     output: Path
     manifest: Path
+    postprocess: Path | None
 
 
 @dataclass(frozen=True)
@@ -221,12 +223,30 @@ def load_module(manifest: Path) -> ToolModule:
             f"{manifest}: template not found: {template}"
         )
 
+    postprocess_value = data.get("postprocess")
+    postprocess: Path | None = None
+
+    if postprocess_value is not None:
+        postprocess_relative = safe_relative_path(
+            postprocess_value,
+            field="postprocess",
+            manifest=manifest,
+        )
+
+        postprocess = manifest.parent / postprocess_relative
+
+        if not postprocess.is_file():
+            raise ThemeError(
+                f"{manifest}: postprocess hook not found: {postprocess}"
+            )
+
     return ToolModule(
         name=name,
         directory=manifest.parent,
         template=template,
         output=output_relative,
         manifest=manifest,
+        postprocess=postprocess,
     )
 
 
@@ -295,6 +315,81 @@ def write_atomic(path: Path, content: str) -> None:
     temporary.replace(path)
 
 
+def run_postprocess(
+    module: ToolModule,
+    rendered_output: Path,
+    destination: Path,
+) -> tuple[Path, ...]:
+    if module.postprocess is None:
+        return ()
+
+    module_name = f"b2t_tool_{module.name}_postprocess"
+
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        module.postprocess,
+    )
+
+    if spec is None or spec.loader is None:
+        raise ThemeError(
+            f"Could not load postprocess hook: {module.postprocess}"
+        )
+
+    hook_module = importlib.util.module_from_spec(spec)
+
+    try:
+        spec.loader.exec_module(hook_module)
+    except Exception as error:
+        raise ThemeError(
+            f"Could not import postprocess hook "
+            f"{module.postprocess}: {error}"
+        ) from error
+
+    build_hook = getattr(hook_module, "build", None)
+
+    if not callable(build_hook):
+        raise ThemeError(
+            f"{module.postprocess}: expected callable build()"
+        )
+
+    try:
+        result = build_hook(rendered_output, destination)
+    except Exception as error:
+        raise ThemeError(
+            f"Postprocess failed for {module.name}: {error}"
+        ) from error
+
+    if result is None:
+        return ()
+
+    if not isinstance(result, (tuple, list)):
+        raise ThemeError(
+            f"{module.postprocess}: build() must return "
+            "a tuple or list of relative output paths"
+        )
+
+    outputs: list[Path] = []
+
+    for value in result:
+        relative = safe_relative_path(
+            str(value),
+            field="postprocess output",
+            manifest=module.manifest,
+        )
+
+        output = destination / relative
+
+        if not output.is_file():
+            raise ThemeError(
+                f"{module.postprocess}: declared output "
+                f"was not created: {output}"
+            )
+
+        outputs.append(output)
+
+    return tuple(outputs)
+
+
 def render_modules(
     palette: Palette,
     modules: tuple[ToolModule, ...],
@@ -308,6 +403,14 @@ def render_modules(
 
         write_atomic(output, rendered)
         outputs.append(output)
+
+        outputs.extend(
+            run_postprocess(
+                module,
+                output,
+                destination,
+            )
+        )
 
     write_atomic(destination / "scheme", f"{palette.name}\n")
     outputs.append(destination / "scheme")

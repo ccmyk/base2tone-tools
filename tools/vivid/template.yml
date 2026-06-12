@@ -1,0 +1,155 @@
+# Base2Tone theme for vivid.
+#
+# Vivid requires a local color table. Its color names below preserve the
+# original Base2Tone coordinates rather than introducing semantic aliases.
+#
+# Values are bare RRGGBB strings because that is vivid's native format.
+
+colors:
+  A0: "{{A0}}"
+  A3: "{{A3}}"
+  A4: "{{A4}}"
+  A5: "{{A5}}"
+  A6: "{{A6}}"
+
+  B2: "{{B2}}"
+  B3: "{{B3}}"
+  B4: "{{B4}}"
+  B5: "{{B5}}"
+  B6: "{{B6}}"
+
+  C6: "{{C6}}"
+
+  D2: "{{D2}}"
+  D3: "{{D3}}"
+  D4: "{{D4}}"
+  D5: "{{D5}}"
+  D6: "{{D6}}"
+
+core:
+  # Ordinary files remain readable and quieter than filesystem navigation.
+  normal_text:
+    foreground: A6
+
+  regular_file:
+    foreground: A6
+
+  reset_to_normal: {}
+
+  # Keep navigation-related objects in adjacent B-bank stops.
+  directory:
+    foreground: B4
+    font-style: bold
+
+  symlink:
+    foreground: B5
+
+  multi_hard_link:
+    foreground: B6
+
+  # Uncommon filesystem objects remain distinct without dominating listings.
+  fifo:
+    foreground: A4
+
+  socket:
+    foreground: A5
+
+  door:
+    foreground: B3
+
+  block_device:
+    foreground: D2
+
+  character_device:
+    foreground: D3
+
+  # Broken links need a conspicuous state that remains usable across schemes.
+  broken_symlink:
+    foreground: A0
+    background: B2
+    font-style: bold
+
+  missing_symlink_target:
+    foreground: A0
+    background: B2
+    font-style: bold
+
+  # Special permission states use explicit backgrounds because LS_COLORS
+  # otherwise makes them difficult to distinguish from ordinary executables.
+  setuid:
+    foreground: A0
+    background: D4
+    font-style: bold
+
+  setgid:
+    foreground: A0
+    background: B4
+    font-style: bold
+
+  file_with_capability:
+    foreground: A0
+    background: D3
+
+  sticky_other_writable:
+    foreground: A0
+    background: D5
+
+  other_writable:
+    foreground: A0
+    background: B5
+
+  sticky:
+    foreground: A0
+    background: A5
+
+  # Match the executable distinction used by the eza module.
+  executable_file:
+    foreground: D4
+    font-style: bold
+
+text:
+  special:
+    foreground: D4
+
+  todo:
+    foreground: D6
+    font-style: bold
+
+  licenses:
+    foreground: A5
+
+  configuration:
+    foreground: B4
+
+  other:
+    foreground: A6
+
+markup:
+  foreground: B5
+
+programming:
+  source:
+    foreground: B4
+
+  tooling:
+    foreground: D4
+
+  continuous-integration:
+    foreground: D5
+
+media:
+  foreground: B5
+
+office:
+  foreground: C6
+
+archives:
+  foreground: B6
+  font-style: underline
+
+executable:
+  foreground: D4
+  font-style: bold
+
+unimportant:
+  foreground: A3
