@@ -37,6 +37,10 @@ PLACEHOLDER_PATTERN = re.compile(
     r"\{\{\s*([ABCD][0-7])\s*\}\}"
 )
 
+SCHEME_PLACEHOLDER_PATTERN = re.compile(
+    r"\{\{\s*SCHEME\s*\}\}"
+)
+
 ANY_PLACEHOLDER_PATTERN = re.compile(
     r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}"
 )
@@ -336,6 +340,10 @@ def render_template(
         return palette.colors[coordinate]
 
     rendered = PLACEHOLDER_PATTERN.sub(replace, text)
+    rendered = SCHEME_PLACEHOLDER_PATTERN.sub(
+        palette.name,
+        rendered,
+    )
 
     unresolved = sorted(
         set(ANY_PLACEHOLDER_PATTERN.findall(rendered))

@@ -1,0 +1,4 @@
+name = "nvim"
+template = "template.lua"
+output = "nvim/current-theme.lua"
+validator = "validate.py"

@@ -198,3 +198,19 @@ After generation and validation are stable:
 ## Separate projects
 
 Zed and Warp remain outside this repository.
+
+### Neovim
+
+Module:
+
+    tools/nvim/
+
+Output:
+
+    generated/current/nvim/current-theme.lua
+
+The module selects the matching upstream `Base2Tone-nvim` dark colorscheme. It
+does not generate Neovim highlight groups or Lualine colors.
+
+Validation confirms that both the upstream colorscheme and its matching
+Lualine theme exist and load successfully in headless Neovim.

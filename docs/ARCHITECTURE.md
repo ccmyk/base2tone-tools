@@ -217,3 +217,21 @@ output.
 This is intended for native formats containing a large repetitive subsection,
 such as Yazi's complete Nerd Font icon database. It does not create additional
 generated or installed files.
+
+## Metadata placeholders
+
+Most tool templates use direct Base2Tone color coordinates:
+
+    {{A0}}
+    {{B4}}
+    {{D6}}
+
+A module that selects an upstream named theme may also use:
+
+    {{SCHEME}}
+
+`{{SCHEME}}` inserts the normalized scheme name. It does not represent a color,
+semantic alias, or second palette system.
+
+Neovim uses this metadata placeholder to select the matching maintained
+`Base2Tone-nvim` colorscheme rather than generating duplicate editor colors.
