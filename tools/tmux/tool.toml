@@ -1,0 +1,4 @@
+name = "tmux"
+template = "template.conf"
+output = "tmux/theme.conf"
+validator = "validate.py"
