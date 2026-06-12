@@ -38,7 +38,7 @@ PLACEHOLDER_PATTERN = re.compile(
 )
 
 ANY_PLACEHOLDER_PATTERN = re.compile(
-    r"\{\{\s*([^{}]+?)\s*\}\}"
+    r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}"
 )
 
 
@@ -58,6 +58,7 @@ class ToolModule:
     name: str
     directory: Path
     template: Path
+    append_templates: tuple[Path, ...]
     output: Path
     manifest: Path
     postprocess: Path | None
@@ -224,6 +225,32 @@ def load_module(manifest: Path) -> ToolModule:
             f"{manifest}: template not found: {template}"
         )
 
+    append_value = data.get("append", [])
+
+    if not isinstance(append_value, list):
+        raise ThemeError(
+            f"{manifest}: 'append' must be an array of relative paths"
+        )
+
+    append_templates: list[Path] = []
+
+    for index, value in enumerate(append_value):
+        append_relative = safe_relative_path(
+            value,
+            field=f"append[{index}]",
+            manifest=manifest,
+        )
+
+        append_template = manifest.parent / append_relative
+
+        if not append_template.is_file():
+            raise ThemeError(
+                f"{manifest}: appended template not found: "
+                f"{append_template}"
+            )
+
+        append_templates.append(append_template)
+
     postprocess_value = data.get("postprocess")
     postprocess: Path | None = None
 
@@ -262,6 +289,7 @@ def load_module(manifest: Path) -> ToolModule:
         name=name,
         directory=manifest.parent,
         template=template,
+        append_templates=tuple(append_templates),
         output=output_relative,
         manifest=manifest,
         postprocess=postprocess,
@@ -463,7 +491,20 @@ def render_modules(
 
     for module in modules:
         output = destination / module.output
-        rendered = render_template(module.template, palette)
+
+        rendered_parts = [
+            render_template(module.template, palette)
+        ]
+
+        rendered_parts.extend(
+            render_template(template, palette)
+            for template in module.append_templates
+        )
+
+        rendered = "\n\n".join(
+            part.rstrip("\n")
+            for part in rendered_parts
+        ) + "\n"
 
         write_atomic(output, rendered)
         outputs.append(output)

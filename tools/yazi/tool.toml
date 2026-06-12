@@ -1,0 +1,5 @@
+name = "yazi"
+template = "template.toml"
+append = ["icons.toml"]
+output = "yazi/theme.toml"
+validator = "validate.py"

@@ -200,3 +200,20 @@ It is vendored because its scheme files are direct compiler input.
 
 Applications such as eza and vivid are installed consumers and validators.
 Their complete source repositories do not need to be vendored.
+
+## Ordered template fragments
+
+Most modules use one primary template.
+
+A module may optionally declare ordered fragments:
+
+    template = "template.toml"
+    append = ["icons.toml"]
+
+The compiler renders the primary template and each appended fragment with the
+same Base2Tone palette, then joins them into the module's single declared
+output.
+
+This is intended for native formats containing a large repetitive subsection,
+such as Yazi's complete Nerd Font icon database. It does not create additional
+generated or installed files.

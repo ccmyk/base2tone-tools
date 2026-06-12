@@ -1,0 +1,181 @@
+# Complete Base2Tone interface theme for Yazi.
+#
+# This readable template contains the interface and filetype mappings.
+# The complete Nerd Font icon database is maintained in icons.toml and
+# appended into the same generated theme.toml.
+#
+# Every color maps directly to an original Base2Tone coordinate.
+#
+# Interface symbols use TOML Unicode escapes for Nerd Font or Powerline glyphs.
+# Keeping those escapes in ASCII source prevents terminal encoding damage.
+
+#:schema https://yazi-rs.github.io/schemas/theme.json
+
+[flavor]
+dark  = ""
+light = ""
+
+[app]
+overall = { fg = "#{{A6}}", bg = "#{{A0}}" }
+
+[mgr]
+# Current path and navigation
+cwd            = { fg = "#{{B5}}", bold = true }
+symlink_target = { fg = "#{{B5}}", italic = true }
+
+# Find
+find_keyword  = { fg = "#{{D5}}", bold = true, italic = true, underline = true }
+find_position = { fg = "#{{D6}}", bg = "#{{A1}}", bold = true, italic = true }
+
+# Markers
+marker_copied   = { fg = "#{{D4}}", bg = "#{{D4}}" }
+marker_cut      = { fg = "#{{B2}}", bg = "#{{B2}}" }
+marker_marked   = { fg = "#{{B5}}", bg = "#{{B5}}" }
+marker_selected = { fg = "#{{D5}}", bg = "#{{D5}}" }
+marker_symbol   = "\u2502"
+
+# Counts
+count_copied   = { fg = "#{{C7}}", bg = "#{{D4}}" }
+count_cut      = { fg = "#{{C7}}", bg = "#{{B2}}" }
+count_selected = { fg = "#{{A0}}", bg = "#{{D5}}" }
+
+# Pane structure
+border_symbol = "\u2502"
+border_style  = { fg = "#{{A3}}" }
+
+# External Syntect theme, intentionally unset
+syntect_theme = ""
+
+[tabs]
+active   = { fg = "#{{C7}}", bg = "#{{B4}}", bold = true }
+inactive = { fg = "#{{A5}}", bg = "#{{A1}}" }
+
+# Powerline semicircle separators
+sep_inner = { open = "\uE0B6", close = "\uE0B4" }
+sep_outer = { open = "\uE0B6", close = "\uE0B4" }
+
+[mode]
+normal_main = { fg = "#{{C7}}", bg = "#{{B4}}", bold = true }
+normal_alt  = { fg = "#{{B4}}", bg = "#{{A1}}" }
+
+select_main = { fg = "#{{C7}}", bg = "#{{B2}}", bold = true }
+select_alt  = { fg = "#{{B2}}", bg = "#{{A1}}" }
+
+unset_main = { fg = "#{{C7}}", bg = "#{{B3}}", bold = true }
+unset_alt  = { fg = "#{{B3}}", bg = "#{{A1}}" }
+
+[indicator]
+parent  = { reversed = true }
+current = { reversed = true }
+preview = { underline = true }
+
+# Powerline semicircle separators
+padding = { open = "\uE0B6", close = "\uE0B4" }
+
+[status]
+overall = {}
+
+# Powerline semicircle separators
+sep_left  = { open = "\uE0B6", close = "\uE0B4" }
+sep_right = { open = "\uE0B6", close = "\uE0B4" }
+
+# Permissions
+perm_sep   = { fg = "#{{A3}}" }
+perm_type  = { fg = "#{{B4}}" }
+perm_read  = { fg = "#{{C5}}" }
+perm_write = { fg = "#{{D5}}" }
+perm_exec  = { fg = "#{{D4}}" }
+
+# Progress
+progress_label  = { fg = "#{{C6}}", bold = true }
+progress_normal = { fg = "#{{D4}}", bg = "#{{A0}}" }
+progress_error  = { fg = "#{{C7}}", bg = "#{{B2}}" }
+
+[which]
+cols = 3
+
+mask = { bg = "#{{A0}}" }
+cand = { fg = "#{{C6}}" }
+rest = { fg = "#{{A4}}" }
+desc = { fg = "#{{D6}}" }
+
+# Nerd Font right-arrow glyph
+separator       = " \uEA9C "
+separator_style = { fg = "#{{A4}}" }
+
+[confirm]
+border = { fg = "#{{B4}}" }
+title  = { fg = "#{{B5}}", bold = true }
+body   = { fg = "#{{A6}}" }
+list   = { fg = "#{{A6}}" }
+
+btn_yes = { fg = "#{{A0}}", bg = "#{{D4}}", bold = true }
+btn_no  = { fg = "#{{A5}}" }
+
+btn_labels = [ "  [Y]es  ", "  (N)o  " ]
+
+[spot]
+border = { fg = "#{{B4}}" }
+title  = { fg = "#{{B5}}", bold = true }
+
+tbl_col  = { fg = "#{{B4}}" }
+tbl_cell = { fg = "#{{D5}}", reversed = true }
+
+[notify]
+title_info  = { fg = "#{{D4}}" }
+title_warn  = { fg = "#{{D6}}" }
+title_error = { fg = "#{{B2}}" }
+
+# Nerd Font information, warning, and error glyphs
+icon_info  = "\uF05A"
+icon_warn  = "\uF071"
+icon_error = "\uF057"
+
+[pick]
+border   = { fg = "#{{B4}}" }
+active   = { fg = "#{{D5}}", bold = true }
+inactive = { fg = "#{{A5}}" }
+
+[input]
+border   = { fg = "#{{B4}}" }
+title    = { fg = "#{{B5}}", bold = true }
+value    = { fg = "#{{C6}}" }
+selected = { fg = "#{{C7}}", bg = "#{{A2}}" }
+
+[cmp]
+border   = { fg = "#{{B4}}" }
+active   = { fg = "#{{C7}}", bg = "#{{A2}}", bold = true }
+inactive = { fg = "#{{A5}}" }
+
+# Nerd Font file, folder, and terminal glyphs
+icon_file    = "\uF15B"
+icon_folder  = "\uE5FF"
+icon_command = "\uF489"
+
+[tasks]
+border  = { fg = "#{{B4}}" }
+title   = { fg = "#{{B5}}", bold = true }
+hovered = { fg = "#{{D5}}", bold = true }
+
+[help]
+on      = { fg = "#{{B5}}" }
+run     = { fg = "#{{D5}}" }
+desc    = { fg = "#{{A6}}" }
+hovered = { fg = "#{{C7}}", bg = "#{{A2}}", bold = true }
+footer  = { fg = "#{{A0}}", bg = "#{{C7}}" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "#{{D5}}" },
+  { mime = "{audio,video}/*", fg = "#{{D4}}" },
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#{{B2}}" },
+  { mime = "application/{pdf,doc,rtf}", fg = "#{{B5}}" },
+  { mime = "vfs/{absent,stale}", fg = "#{{A4}}" },
+
+  { url = "*",  is = "orphan", bg = "#{{B2}}" },
+  { url = "*",  is = "exec",   fg = "#{{D4}}" },
+  { url = "*",  is = "dummy",  bg = "#{{B2}}" },
+  { url = "*/", is = "dummy",  bg = "#{{B2}}" },
+
+  { url = "*/", fg = "#{{B4}}" },
+]

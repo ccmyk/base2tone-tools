@@ -120,9 +120,31 @@ Validation checks the complete section and field structure along with supported
 foreground, background, and text-style syntax without changing the user's
 active shell theme.
 
-### Remaining planned module
+### Yazi
 
-- Yazi
+Module:
+
+    tools/yazi/
+
+Maintained sources:
+
+    tools/yazi/template.toml
+    tools/yazi/icons.toml
+
+Output:
+
+    generated/current/yazi/theme.toml
+
+The readable interface and filetype mappings are maintained in
+`template.toml`. The complete shipped icon database is maintained separately in
+`icons.toml` so hundreds of icon rules do not obscure the interface design.
+
+The module manifest appends the icon fragment after the interface template.
+Both parts compile into one native Yazi theme file.
+
+Validation checks TOML syntax, required interface sections, filetype rules,
+icon-group completeness, individual icon rules, color syntax, and isolated
+loading through `yazi --debug`.
 
 ## Phase 4: Terminal workspace
 
