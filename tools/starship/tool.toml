@@ -1,0 +1,4 @@
+name = "starship"
+template = "template.toml"
+output = "starship/palette.toml"
+validator = "validate.py"

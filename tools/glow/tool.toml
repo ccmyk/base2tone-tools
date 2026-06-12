@@ -1,0 +1,4 @@
+name = "glow"
+template = "template.json"
+output = "glow/style.json"
+validator = "validate.py"

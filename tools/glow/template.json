@@ -1,0 +1,235 @@
+{
+  "document": {
+    "block_prefix": "\n",
+    "block_suffix": "\n",
+    "color": "#{{A6}}",
+    "margin": 2
+  },
+  "block_quote": {
+    "indent": 1,
+    "indent_token": "│ ",
+    "color": "#{{A4}}"
+  },
+  "paragraph": {
+    "color": "#{{A6}}"
+  },
+  "list": {
+    "level_indent": 2,
+    "color": "#{{A6}}"
+  },
+  "heading": {
+    "block_suffix": "\n",
+    "bold": true
+  },
+  "h1": {
+    "prefix": "# ",
+    "color": "#{{D4}}",
+    "bold": true
+  },
+  "h2": {
+    "prefix": "## ",
+    "color": "#{{D3}}",
+    "bold": true
+  },
+  "h3": {
+    "prefix": "### ",
+    "color": "#{{B4}}",
+    "bold": true
+  },
+  "h4": {
+    "prefix": "#### ",
+    "color": "#{{B3}}",
+    "bold": true
+  },
+  "h5": {
+    "prefix": "##### ",
+    "color": "#{{A6}}",
+    "bold": true
+  },
+  "h6": {
+    "prefix": "###### ",
+    "color": "#{{A5}}"
+  },
+  "text": {
+    "color": "#{{A6}}"
+  },
+  "strikethrough": {
+    "color": "#{{A4}}",
+    "crossed_out": true
+  },
+  "emph": {
+    "color": "#{{A6}}",
+    "italic": true
+  },
+  "strong": {
+    "color": "#{{C7}}",
+    "bold": true
+  },
+  "hr": {
+    "color": "#{{A3}}",
+    "format": "\n────────\n"
+  },
+  "item": {
+    "block_prefix": "• ",
+    "color": "#{{B4}}"
+  },
+  "enumeration": {
+    "block_prefix": ". ",
+    "color": "#{{B4}}"
+  },
+  "task": {
+    "ticked": "[x] ",
+    "unticked": "[ ] ",
+    "color": "#{{A6}}"
+  },
+  "link": {
+    "color": "#{{B5}}",
+    "underline": true
+  },
+  "link_text": {
+    "color": "#{{D4}}",
+    "bold": true
+  },
+  "image": {
+    "color": "#{{B4}}",
+    "underline": true
+  },
+  "image_text": {
+    "color": "#{{A5}}",
+    "format": "Image: {{.text}} →"
+  },
+  "code": {
+    "prefix": "\u00a0",
+    "suffix": "\u00a0",
+    "color": "#{{D4}}",
+    "background_color": "#{{A1}}"
+  },
+  "code_block": {
+    "color": "#{{A6}}",
+    "margin": 2,
+    "chroma": {
+      "text": {
+        "color": "#{{A6}}"
+      },
+      "error": {
+        "color": "#{{C7}}",
+        "background_color": "#{{B2}}"
+      },
+      "comment": {
+        "color": "#{{A3}}"
+      },
+      "comment_preproc": {
+        "color": "#{{D3}}"
+      },
+      "keyword": {
+        "color": "#{{D4}}",
+        "bold": true
+      },
+      "keyword_reserved": {
+        "color": "#{{D5}}"
+      },
+      "keyword_namespace": {
+        "color": "#{{D4}}"
+      },
+      "keyword_type": {
+        "color": "#{{B5}}"
+      },
+      "operator": {
+        "color": "#{{A5}}"
+      },
+      "punctuation": {
+        "color": "#{{A4}}"
+      },
+      "name": {
+        "color": "#{{A6}}"
+      },
+      "name_builtin": {
+        "color": "#{{B5}}"
+      },
+      "name_tag": {
+        "color": "#{{D4}}"
+      },
+      "name_attribute": {
+        "color": "#{{B4}}"
+      },
+      "name_class": {
+        "color": "#{{C7}}",
+        "bold": true
+      },
+      "name_constant": {
+        "color": "#{{D5}}"
+      },
+      "name_decorator": {
+        "color": "#{{D4}}"
+      },
+      "name_exception": {
+        "color": "#{{B2}}",
+        "bold": true
+      },
+      "name_function": {
+        "color": "#{{B5}}"
+      },
+      "name_other": {
+        "color": "#{{A6}}"
+      },
+      "literal": {
+        "color": "#{{A6}}"
+      },
+      "literal_number": {
+        "color": "#{{D3}}"
+      },
+      "literal_date": {
+        "color": "#{{D3}}"
+      },
+      "literal_string": {
+        "color": "#{{B5}}"
+      },
+      "literal_string_escape": {
+        "color": "#{{B6}}"
+      },
+      "generic_deleted": {
+        "color": "#{{B2}}"
+      },
+      "generic_emph": {
+        "color": "#{{A6}}",
+        "italic": true
+      },
+      "generic_inserted": {
+        "color": "#{{D4}}"
+      },
+      "generic_strong": {
+        "color": "#{{C7}}",
+        "bold": true
+      },
+      "generic_subheading": {
+        "color": "#{{A4}}"
+      },
+      "background": {
+        "background_color": "#{{A1}}"
+      }
+    }
+  },
+  "table": {
+    "color": "#{{A6}}",
+    "center_separator": "┼",
+    "column_separator": "│",
+    "row_separator": "─"
+  },
+  "definition_list": {
+    "color": "#{{A6}}"
+  },
+  "definition_term": {
+    "color": "#{{B5}}",
+    "bold": true
+  },
+  "definition_description": {
+    "block_prefix": "\n  ",
+    "color": "#{{A6}}"
+  },
+  "html_block": {
+    "color": "#{{A5}}"
+  },
+  "html_span": {
+    "color": "#{{A5}}"
+  }
+}

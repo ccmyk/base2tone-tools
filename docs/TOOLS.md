@@ -169,13 +169,30 @@ Planned modules:
 
 - Lazygit
 - Delta
-- Glow
 - bat
 
 Glow will be recreated from its current native schema.
 
 bat should use maintained upstream Base2Tone tmTheme files where appropriate
 instead of generating an incomplete syntax theme.
+
+### Glow
+
+Module:
+
+    tools/glow/
+
+Output:
+
+    generated/current/glow/style.json
+
+The module produces a complete native Glamour JSON style for Glow. Markdown
+structure and Chroma syntax fields map directly to original Base2Tone
+coordinates. Supporting text and punctuation remain restrained while headings,
+links, keywords, names, and other important content receive stronger emphasis.
+
+Validation checks JSON structure, maintained Chroma fields, color syntax,
+unresolved placeholders, and an isolated Markdown render through Glow.
 
 ## Phase 6: Monitoring and information
 
