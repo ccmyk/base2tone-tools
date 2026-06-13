@@ -15,7 +15,7 @@ HEX_COLOR = re.compile(
 
 EXPECTED_COORDINATES = {
     f"{bank}{index}"
-    for bank in "ABCD"
+    for bank in "abcd"
     for index in range(8)
 }
 
@@ -100,8 +100,8 @@ def validate(
 format = "$character"
 
 [character]
-success_symbol = "[>](A0)"
-error_symbol = "[>](D6)"
+success_symbol = "[>](a0)"
+error_symbol = "[>](d6)"
 
 {text}
 '''
@@ -127,6 +127,7 @@ error_symbol = "[>](D6)"
         )
 
         environment = os.environ.copy()
+        environment.setdefault("TERM", "xterm-256color")
         environment["STARSHIP_CONFIG"] = str(config_path)
         environment["STARSHIP_SHELL"] = "zsh"
 

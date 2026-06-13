@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 
@@ -21,14 +23,28 @@ def validate(
 
     if "{{" in text or "}}" in text:
         raise RuntimeError(
-            "generated Fastfetch configuration contains unresolved placeholders"
+            "generated Fastfetch theme fragment contains unresolved placeholders"
+        )
+
+    try:
+        theme = json.loads(text)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            f"generated Fastfetch theme fragment is invalid JSON: {error}"
+        ) from error
+
+    display = theme.get("display")
+
+    if not isinstance(display, dict):
+        raise RuntimeError(
+            "generated Fastfetch theme fragment is missing display"
         )
 
     colors = set(HEX_COLOR.findall(text))
 
     if len(colors) < EXPECTED_COORDINATE_COLORS:
         raise RuntimeError(
-            "generated Fastfetch configuration does not contain "
+            "generated Fastfetch theme fragment does not contain "
             "the expected Base2Tone color mappings"
         )
 
@@ -39,20 +55,45 @@ def validate(
             "fastfetch is not installed or is not available in PATH"
         )
 
-    # Override the configured module list so validation does not repeatedly
-    # execute cache, Docker, storage, and mount inspection commands.
-    process = subprocess.run(
-        [
-            fastfetch,
-            "--config",
-            str(rendered_theme),
-            "--structure",
+    # Merge the color fragment into a minimal config so validation does not
+    # require the personal Fastfetch module list or system commands.
+    config = {
+        "$schema": (
+            "https://github.com/fastfetch-cli/fastfetch/raw/dev/"
+            "doc/json_schema.json"
+        ),
+        "logo": {
+            "type": "none",
+        },
+        "display": {
+            "separator": "  ",
+            "brightColor": False,
+            **display,
+        },
+        "modules": [
             "title",
-            "--pipe",
         ],
-        capture_output=True,
-        text=True,
-    )
+    }
+
+    with tempfile.TemporaryDirectory(
+        prefix="base2tone-tools-fastfetch-"
+    ) as temporary_directory:
+        config_path = Path(temporary_directory) / "config.jsonc"
+        config_path.write_text(
+            json.dumps(config, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        process = subprocess.run(
+            [
+                fastfetch,
+                "--config",
+                str(config_path),
+                "--pipe",
+            ],
+            capture_output=True,
+            text=True,
+        )
 
     if process.returncode != 0:
         message = (

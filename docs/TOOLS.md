@@ -250,3 +250,20 @@ percentage bars, and threshold states.
 Validation loads the generated configuration with Fastfetch using a minimal
 temporary structure so all-scheme testing does not repeatedly execute the
 configured system-inspection commands.
+
+### Bat
+
+Module:
+
+    tools/bat/
+
+Output:
+
+    generated/current/bat/config
+
+The module selects the matching upstream Base2Tone-bat dark theme. Syntax
+scope mappings remain owned by the upstream theme project rather than being
+re-created locally.
+
+Validation confirms that the selected upstream theme exists and that Bat
+produces syntax-highlighted ANSI output.

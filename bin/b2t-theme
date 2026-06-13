@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from lib.compiler import (  # noqa: E402
     ROOT,
     ThemeError,
+    apply_active,
     build_active,
     discover_modules,
     list_schemes,
@@ -58,6 +59,21 @@ def command_build(scheme: str) -> int:
 
     for output in result.outputs:
         print(f"Generated: {output.relative_to(ROOT)}")
+
+    return 0
+
+
+def command_apply(scheme: str, modules: tuple[str, ...] | None) -> int:
+    result = apply_active(scheme, modules=modules)
+
+    print(f"Scheme: {result.palette.name}")
+    print(f"Source: {result.palette.source}")
+
+    if result.installed:
+        for path in result.installed:
+            print(f"Installed: {path}")
+    else:
+        print("Installed: (no modules with install metadata)")
 
     return 0
 
@@ -114,6 +130,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     build_parser.add_argument("scheme")
 
+    apply_parser = subparsers.add_parser(
+        "apply",
+        help="build and install outputs with install metadata into dotfiles",
+    )
+    apply_parser.add_argument("scheme")
+    apply_parser.add_argument(
+        "--module",
+        action="append",
+        dest="modules",
+        metavar="NAME",
+        help="install only the named module (repeatable)",
+    )
+
     subparsers.add_parser(
         "test",
         help="test every scheme and module in temporary storage",
@@ -135,6 +164,10 @@ def main() -> int:
 
         if args.command == "build":
             return command_build(args.scheme)
+
+        if args.command == "apply":
+            modules = tuple(args.modules) if args.modules else None
+            return command_apply(args.scheme, modules)
 
         if args.command == "test":
             return command_test()

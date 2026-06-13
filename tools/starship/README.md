@@ -37,6 +37,21 @@ palette name:
 
 The entries within that palette retain the original Base2Tone coordinate names.
 
+## Installation
+
+The generated palette fragment is spliced into the personal Starship
+configuration during apply:
+
+    b2t-theme apply <scheme> --module starship
+
+The install step replaces only the marked palette block:
+
+    # BEGIN generated Base2Tone Starship palette
+    ...
+    # END generated Base2Tone Starship palette
+
+Reload the shell after apply so Starship reads the updated palette.
+
 ## Configuration boundary
 
 The personal Starship configuration owns:

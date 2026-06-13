@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import re
 import shutil
 import tempfile
@@ -58,6 +59,14 @@ class Palette:
 
 
 @dataclass(frozen=True)
+class InstallSpec:
+    target: Path
+    mode: str
+    begin_marker: str | None = None
+    end_marker: str | None = None
+
+
+@dataclass(frozen=True)
 class ToolModule:
     name: str
     directory: Path
@@ -67,6 +76,7 @@ class ToolModule:
     manifest: Path
     postprocess: Path | None
     validator: Path | None
+    install: InstallSpec | None
 
 
 @dataclass(frozen=True)
@@ -74,6 +84,13 @@ class BuildResult:
     palette: Palette
     modules: tuple[ToolModule, ...]
     outputs: tuple[Path, ...]
+
+
+@dataclass(frozen=True)
+class ApplyResult:
+    palette: Palette
+    modules: tuple[ToolModule, ...]
+    installed: tuple[Path, ...]
 
 
 def normalize_scheme(value: str) -> str:
@@ -186,6 +203,75 @@ def safe_relative_path(
     return path
 
 
+def load_install_spec(
+    data: dict[str, object],
+    *,
+    manifest: Path,
+) -> InstallSpec | None:
+    install_value = data.get("install")
+
+    if install_value is None:
+        return None
+
+    if not isinstance(install_value, dict):
+        raise ThemeError(
+            f"{manifest}: 'install' must be a table"
+        )
+
+    target_relative = safe_relative_path(
+        install_value.get("target"),
+        field="install.target",
+        manifest=manifest,
+    )
+
+    mode = install_value.get("mode")
+
+    if not isinstance(mode, str) or not mode.strip():
+        raise ThemeError(
+            f"{manifest}: 'install.mode' must be a non-empty string"
+        )
+
+    mode = mode.strip()
+
+    if mode not in {"symlink", "palette-block"}:
+        raise ThemeError(
+            f"{manifest}: unsupported install mode {mode!r}"
+        )
+
+    begin_marker = install_value.get("begin")
+    end_marker = install_value.get("end")
+
+    if mode == "palette-block":
+        if (
+            not isinstance(begin_marker, str)
+            or not begin_marker.strip()
+            or not isinstance(end_marker, str)
+            or not end_marker.strip()
+        ):
+            raise ThemeError(
+                f"{manifest}: palette-block install requires "
+                "'install.begin' and 'install.end' markers"
+            )
+
+        return InstallSpec(
+            target=target_relative,
+            mode=mode,
+            begin_marker=begin_marker.strip(),
+            end_marker=end_marker.strip(),
+        )
+
+    if begin_marker is not None or end_marker is not None:
+        raise ThemeError(
+            f"{manifest}: install markers are only valid for "
+            "palette-block installs"
+        )
+
+    return InstallSpec(
+        target=target_relative,
+        mode=mode,
+    )
+
+
 def load_module(manifest: Path) -> ToolModule:
     try:
         with manifest.open("rb") as file:
@@ -289,6 +375,8 @@ def load_module(manifest: Path) -> ToolModule:
                 f"{manifest}: validator hook not found: {validator}"
             )
 
+    install = load_install_spec(data, manifest=manifest)
+
     return ToolModule(
         name=name,
         directory=manifest.parent,
@@ -298,6 +386,7 @@ def load_module(manifest: Path) -> ToolModule:
         manifest=manifest,
         postprocess=postprocess,
         validator=validator,
+        install=install,
     )
 
 
@@ -559,6 +648,151 @@ def test_all_schemes() -> tuple[str, ...]:
             passed.append(palette.name)
 
     return tuple(passed)
+
+
+def default_dotfiles_root() -> Path:
+    override = os.environ.get("B2T_DOTFILES_ROOT")
+
+    if override:
+        return Path(override).expanduser()
+
+    return Path.home() / ".dotfiles"
+
+
+def replace_palette_block(
+    target_text: str,
+    palette_text: str,
+    *,
+    begin_marker: str,
+    end_marker: str,
+    target: Path,
+) -> str:
+    begin_index = target_text.find(begin_marker)
+
+    if begin_index == -1:
+        raise ThemeError(
+            f"{target}: missing palette begin marker: {begin_marker}"
+        )
+
+    end_index = target_text.find(end_marker, begin_index)
+
+    if end_index == -1:
+        raise ThemeError(
+            f"{target}: missing palette end marker: {end_marker}"
+        )
+
+    end_index += len(end_marker)
+
+    if end_index < len(target_text) and target_text[end_index] == "\n":
+        end_index += 1
+
+    return (
+        target_text[:begin_index]
+        + palette_text.rstrip("\n")
+        + "\n"
+        + target_text[end_index:]
+    )
+
+
+def install_module_output(
+    module: ToolModule,
+    *,
+    generated_output: Path,
+    dotfiles_root: Path,
+) -> Path:
+    if module.install is None:
+        raise ThemeError(
+            f"{module.manifest}: module {module.name!r} has no install target"
+        )
+
+    destination = dotfiles_root / module.install.target
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    if module.install.mode == "symlink":
+        if destination.exists() or destination.is_symlink():
+            if destination.is_symlink():
+                destination.unlink()
+            elif destination.is_file():
+                destination.unlink()
+            else:
+                raise ThemeError(
+                    f"install target is not a file: {destination}"
+                )
+
+        destination.symlink_to(generated_output)
+        return destination
+
+    palette_text = generated_output.read_text(encoding="utf-8")
+
+    if destination.is_file():
+        target_text = destination.read_text(encoding="utf-8")
+    elif not destination.exists():
+        raise ThemeError(
+            f"palette-block install requires an existing target: "
+            f"{destination}"
+        )
+    else:
+        raise ThemeError(
+            f"install target is not a regular file: {destination}"
+        )
+
+    updated = replace_palette_block(
+        target_text,
+        palette_text,
+        begin_marker=module.install.begin_marker or "",
+        end_marker=module.install.end_marker or "",
+        target=destination,
+    )
+
+    write_atomic(destination, updated)
+    return destination
+
+
+def apply_active(
+    scheme: str,
+    *,
+    dotfiles_root: Path | None = None,
+    modules: tuple[str, ...] | None = None,
+) -> ApplyResult:
+    result = build_active(scheme)
+    root = dotfiles_root or default_dotfiles_root()
+
+    if not root.is_dir():
+        raise ThemeError(
+            f"Dotfiles root not found: {root}"
+        )
+
+    selected = set(modules) if modules is not None else None
+    installed: list[Path] = []
+
+    for module in result.modules:
+        if module.install is None:
+            continue
+
+        if selected is not None and module.name not in selected:
+            continue
+
+        generated_output = CURRENT_DIR / module.output
+
+        if not generated_output.is_file():
+            raise ThemeError(
+                f"Generated output not found for {module.name}: "
+                f"{generated_output}"
+            )
+
+        installed.append(
+            install_module_output(
+                module,
+                generated_output=generated_output,
+                dotfiles_root=root,
+            )
+        )
+
+    return ApplyResult(
+        palette=result.palette,
+        modules=result.modules,
+        installed=tuple(installed),
+    )
 
 
 def build_active(scheme: str) -> BuildResult:

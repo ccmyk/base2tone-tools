@@ -1,4 +1,4 @@
 name = "fastfetch"
 template = "template.jsonc"
-output = "fastfetch/config.jsonc"
+output = "fastfetch/theme.jsonc"
 validator = "validate.py"

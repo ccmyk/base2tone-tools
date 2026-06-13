@@ -1,0 +1,8 @@
+name = "bat"
+template = "template.conf"
+output = "bat/theme.conf"
+validator = "validate.py"
+
+[install]
+target = ".config/bat/theme.conf"
+mode = "symlink"
