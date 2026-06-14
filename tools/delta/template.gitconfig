@@ -4,13 +4,13 @@
 #     path = ~/.config/delta/theme.gitconfig
 
 [delta]
-  syntax-theme = base2tone-current
-  plus-style = "syntax #{{A1}} #{{D4}}"
-  minus-style = "syntax #{{A1}} #{{B2}}"
-  zero-style = "syntax #{{A0}} #{{A6}}"
+  syntax-theme = base2tone-{{SCHEME}}-dark
+  plus-style = "#{{A1}} #{{D4}}"
+  minus-style = "#{{A1}} #{{B2}}"
+  zero-style = "#{{A0}} #{{A6}}"
 
-  plus-emph-style = "syntax #{{D4}} #{{A0}}"
-  minus-emph-style = "syntax #{{B2}} #{{A0}}"
+  plus-emph-style = "#{{D4}} #{{A0}}"
+  minus-emph-style = "#{{B2}} #{{A0}}"
 
   line-numbers-left-style = "#{{A4}}"
   line-numbers-right-style = "#{{A4}}"
@@ -20,7 +20,7 @@
 
   file-style = "bold #{{C7}}"
   file-decoration-style = "#{{A3}}"
-  hunk-header-style = "syntax bold #{{B5}}"
+  hunk-header-style = "bold #{{B5}}"
   hunk-header-decoration-style = "#{{A3}}"
   hunk-header-file-style = "bold #{{C7}}"
   hunk-header-line-number-style = "#{{D5}}"
