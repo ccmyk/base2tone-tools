@@ -1,0 +1,9 @@
+name = "zellij"
+template = "template.kdl"
+output = "zellij/base2tone.kdl"
+postprocess = "build.py"
+validator = "validate.py"
+
+[install]
+target = "zellij/themes/base2tone.kdl"
+mode = "symlink"

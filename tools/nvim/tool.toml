@@ -2,3 +2,7 @@ name = "nvim"
 template = "template.lua"
 output = "nvim/current-theme.lua"
 validator = "validate.py"
+
+[install]
+target = "nvim/lua/current-theme.lua"
+mode = "symlink"

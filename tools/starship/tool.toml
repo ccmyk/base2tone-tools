@@ -4,7 +4,7 @@ output = "starship/palette.toml"
 validator = "validate.py"
 
 [install]
-target = ".config/starship.toml"
+target = "starship.toml"
 mode = "palette-block"
 begin = "# BEGIN generated Base2Tone Starship palette"
 end = "# END generated Base2Tone Starship palette"

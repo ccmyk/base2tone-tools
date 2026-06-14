@@ -1,0 +1,8 @@
+name = "delta"
+template = "template.gitconfig"
+output = "delta/theme.gitconfig"
+validator = "validate.py"
+
+[install]
+target = "delta/theme.gitconfig"
+mode = "symlink"

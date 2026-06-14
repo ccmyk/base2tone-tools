@@ -63,8 +63,16 @@ def command_build(scheme: str) -> int:
     return 0
 
 
-def command_apply(scheme: str, modules: tuple[str, ...] | None) -> int:
-    result = apply_active(scheme, modules=modules)
+def command_apply(
+    scheme: str,
+    modules: tuple[str, ...] | None,
+    install_root: Path | None,
+) -> int:
+    result = apply_active(
+        scheme,
+        modules=modules,
+        install_root=install_root,
+    )
 
     print(f"Scheme: {result.palette.name}")
     print(f"Source: {result.palette.source}")
@@ -103,7 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="b2t-theme",
         description=(
-            "Build tool-native themes directly from "
+            "Build and install tool-native themes directly from "
             "Base2Tone coordinates."
         ),
     )
@@ -126,13 +134,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     build_parser = subparsers.add_parser(
         "build",
-        help="build one active theme set",
+        help="build one active generated theme set",
     )
     build_parser.add_argument("scheme")
 
     apply_parser = subparsers.add_parser(
         "apply",
-        help="build and install outputs with install metadata into dotfiles",
+        help=(
+            "build, validate, and install generated outputs into "
+            "the XDG config tree"
+        ),
     )
     apply_parser.add_argument("scheme")
     apply_parser.add_argument(
@@ -141,6 +152,15 @@ def build_parser() -> argparse.ArgumentParser:
         dest="modules",
         metavar="NAME",
         help="install only the named module (repeatable)",
+    )
+    apply_parser.add_argument(
+        "--install-root",
+        type=Path,
+        default=None,
+        help=(
+            "install root; defaults to B2T_INSTALL_ROOT, "
+            "then XDG_CONFIG_HOME, then ~/.config"
+        ),
     )
 
     subparsers.add_parser(
@@ -167,7 +187,12 @@ def main() -> int:
 
         if args.command == "apply":
             modules = tuple(args.modules) if args.modules else None
-            return command_apply(args.scheme, modules)
+
+            return command_apply(
+                args.scheme,
+                modules,
+                args.install_root,
+            )
 
         if args.command == "test":
             return command_test()

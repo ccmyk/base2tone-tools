@@ -2,3 +2,7 @@ name = "fzf"
 template = "template.zsh"
 output = "fzf/colors.zsh"
 validator = "validate.py"
+
+[install]
+target = "fzf/colors.zsh"
+mode = "symlink"

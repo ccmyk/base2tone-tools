@@ -3,3 +3,7 @@ template = "template.toml"
 append = ["icons.toml"]
 output = "yazi/theme.toml"
 validator = "validate.py"
+
+[install]
+target = "yazi/flavors/base2tone.yazi/theme.toml"
+mode = "symlink"

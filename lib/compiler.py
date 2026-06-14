@@ -60,6 +60,7 @@ class Palette:
 
 @dataclass(frozen=True)
 class InstallSpec:
+    source: Path
     target: Path
     mode: str
     begin_marker: str | None = None
@@ -76,7 +77,7 @@ class ToolModule:
     manifest: Path
     postprocess: Path | None
     validator: Path | None
-    install: InstallSpec | None
+    installs: tuple[InstallSpec, ...]
 
 
 @dataclass(frozen=True)
@@ -156,7 +157,6 @@ def load_palette(scheme: str) -> Palette:
                 f"Duplicate coordinate {coordinate} in {path}"
             )
 
-        # Templates control whether their native format requires "#".
         colors[coordinate] = value.lower()
 
     missing = [
@@ -203,24 +203,29 @@ def safe_relative_path(
     return path
 
 
-def load_install_spec(
-    data: dict[str, object],
+def load_one_install_spec(
+    install_value: dict[str, object],
     *,
     manifest: Path,
-) -> InstallSpec | None:
-    install_value = data.get("install")
+    index: int,
+    default_source: Path,
+) -> InstallSpec:
+    prefix = "install" if index == 0 else f"install[{index}]"
 
-    if install_value is None:
-        return None
+    source_value = install_value.get("source")
 
-    if not isinstance(install_value, dict):
-        raise ThemeError(
-            f"{manifest}: 'install' must be a table"
+    if source_value is None:
+        source_relative = default_source
+    else:
+        source_relative = safe_relative_path(
+            source_value,
+            field=f"{prefix}.source",
+            manifest=manifest,
         )
 
     target_relative = safe_relative_path(
         install_value.get("target"),
-        field="install.target",
+        field=f"{prefix}.target",
         manifest=manifest,
     )
 
@@ -228,7 +233,7 @@ def load_install_spec(
 
     if not isinstance(mode, str) or not mode.strip():
         raise ThemeError(
-            f"{manifest}: 'install.mode' must be a non-empty string"
+            f"{manifest}: {prefix}.mode must be a non-empty string"
         )
 
     mode = mode.strip()
@@ -250,10 +255,11 @@ def load_install_spec(
         ):
             raise ThemeError(
                 f"{manifest}: palette-block install requires "
-                "'install.begin' and 'install.end' markers"
+                f"{prefix}.begin and {prefix}.end markers"
             )
 
         return InstallSpec(
+            source=source_relative,
             target=target_relative,
             mode=mode,
             begin_marker=begin_marker.strip(),
@@ -267,8 +273,55 @@ def load_install_spec(
         )
 
     return InstallSpec(
+        source=source_relative,
         target=target_relative,
         mode=mode,
+    )
+
+
+def load_install_specs(
+    data: dict[str, object],
+    *,
+    manifest: Path,
+    default_source: Path,
+) -> tuple[InstallSpec, ...]:
+    install_value = data.get("install")
+
+    if install_value is None:
+        return ()
+
+    if isinstance(install_value, dict):
+        return (
+            load_one_install_spec(
+                install_value,
+                manifest=manifest,
+                index=0,
+                default_source=default_source,
+            ),
+        )
+
+    if isinstance(install_value, list):
+        specs: list[InstallSpec] = []
+
+        for index, value in enumerate(install_value):
+            if not isinstance(value, dict):
+                raise ThemeError(
+                    f"{manifest}: install[{index}] must be a table"
+                )
+
+            specs.append(
+                load_one_install_spec(
+                    value,
+                    manifest=manifest,
+                    index=index,
+                    default_source=default_source,
+                )
+            )
+
+        return tuple(specs)
+
+    raise ThemeError(
+        f"{manifest}: 'install' must be a table or array of tables"
     )
 
 
@@ -375,7 +428,11 @@ def load_module(manifest: Path) -> ToolModule:
                 f"{manifest}: validator hook not found: {validator}"
             )
 
-    install = load_install_spec(data, manifest=manifest)
+    installs = load_install_specs(
+        data,
+        manifest=manifest,
+        default_source=output_relative,
+    )
 
     return ToolModule(
         name=name,
@@ -386,7 +443,7 @@ def load_module(manifest: Path) -> ToolModule:
         manifest=manifest,
         postprocess=postprocess,
         validator=validator,
-        install=install,
+        installs=installs,
     )
 
 
@@ -650,13 +707,18 @@ def test_all_schemes() -> tuple[str, ...]:
     return tuple(passed)
 
 
-def default_dotfiles_root() -> Path:
-    override = os.environ.get("B2T_DOTFILES_ROOT")
+def default_install_root() -> Path:
+    override = os.environ.get("B2T_INSTALL_ROOT")
 
     if override:
         return Path(override).expanduser()
 
-    return Path.home() / ".dotfiles"
+    xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+
+    if xdg_config_home:
+        return Path(xdg_config_home).expanduser()
+
+    return Path.home() / ".config"
 
 
 def replace_palette_block(
@@ -696,19 +758,23 @@ def replace_palette_block(
 
 def install_module_output(
     module: ToolModule,
+    install: InstallSpec,
     *,
-    generated_output: Path,
-    dotfiles_root: Path,
+    generated_root: Path,
+    install_root: Path,
 ) -> Path:
-    if module.install is None:
+    generated_output = generated_root / install.source
+
+    if not generated_output.is_file():
         raise ThemeError(
-            f"{module.manifest}: module {module.name!r} has no install target"
+            f"Generated install source not found for {module.name}: "
+            f"{generated_output}"
         )
 
-    destination = dotfiles_root / module.install.target
+    destination = install_root / install.target
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    if module.install.mode == "symlink":
+    if install.mode == "symlink":
         if destination.exists() or destination.is_symlink():
             if destination.is_symlink():
                 destination.unlink()
@@ -739,8 +805,8 @@ def install_module_output(
     updated = replace_palette_block(
         target_text,
         palette_text,
-        begin_marker=module.install.begin_marker or "",
-        end_marker=module.install.end_marker or "",
+        begin_marker=install.begin_marker or "",
+        end_marker=install.end_marker or "",
         target=destination,
     )
 
@@ -751,42 +817,29 @@ def install_module_output(
 def apply_active(
     scheme: str,
     *,
-    dotfiles_root: Path | None = None,
+    install_root: Path | None = None,
     modules: tuple[str, ...] | None = None,
 ) -> ApplyResult:
     result = build_active(scheme)
-    root = dotfiles_root or default_dotfiles_root()
-
-    if not root.is_dir():
-        raise ThemeError(
-            f"Dotfiles root not found: {root}"
-        )
+    root = install_root or default_install_root()
+    root.mkdir(parents=True, exist_ok=True)
 
     selected = set(modules) if modules is not None else None
     installed: list[Path] = []
 
     for module in result.modules:
-        if module.install is None:
-            continue
-
         if selected is not None and module.name not in selected:
             continue
 
-        generated_output = CURRENT_DIR / module.output
-
-        if not generated_output.is_file():
-            raise ThemeError(
-                f"Generated output not found for {module.name}: "
-                f"{generated_output}"
+        for install in module.installs:
+            installed.append(
+                install_module_output(
+                    module,
+                    install,
+                    generated_root=CURRENT_DIR,
+                    install_root=root,
+                )
             )
-
-        installed.append(
-            install_module_output(
-                module,
-                generated_output=generated_output,
-                dotfiles_root=root,
-            )
-        )
 
     return ApplyResult(
         palette=result.palette,

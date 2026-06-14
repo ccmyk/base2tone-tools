@@ -4,5 +4,5 @@ output = "bat/theme.conf"
 validator = "validate.py"
 
 [install]
-target = ".config/bat/theme.conf"
+target = "bat/theme.conf"
 mode = "symlink"

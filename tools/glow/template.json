@@ -2,63 +2,64 @@
   "document": {
     "block_prefix": "\n",
     "block_suffix": "\n",
-    "color": "#{{A6}}",
+    "color": "#{{C6}}",
     "margin": 2
   },
   "block_quote": {
     "indent": 1,
-    "indent_token": "│ ",
-    "color": "#{{A4}}"
+    "indent_token": "\u2502 ",
+    "color": "#{{A5}}"
   },
   "paragraph": {
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "list": {
     "level_indent": 2,
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "heading": {
     "block_suffix": "\n",
-    "bold": true
+    "bold": true,
+    "color": "#{{C7}}"
   },
   "h1": {
     "prefix": "# ",
-    "color": "#{{D4}}",
+    "color": "#{{D7}}",
     "bold": true
   },
   "h2": {
     "prefix": "## ",
-    "color": "#{{D3}}",
+    "color": "#{{D6}}",
     "bold": true
   },
   "h3": {
     "prefix": "### ",
-    "color": "#{{B4}}",
+    "color": "#{{B6}}",
     "bold": true
   },
   "h4": {
     "prefix": "#### ",
-    "color": "#{{B3}}",
+    "color": "#{{B5}}",
     "bold": true
   },
   "h5": {
     "prefix": "##### ",
-    "color": "#{{A6}}",
+    "color": "#{{C7}}",
     "bold": true
   },
   "h6": {
     "prefix": "###### ",
-    "color": "#{{A5}}"
+    "color": "#{{A6}}"
   },
   "text": {
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "strikethrough": {
     "color": "#{{A4}}",
     "crossed_out": true
   },
   "emph": {
-    "color": "#{{A6}}",
+    "color": "#{{C6}}",
     "italic": true
   },
   "strong": {
@@ -66,91 +67,91 @@
     "bold": true
   },
   "hr": {
-    "color": "#{{A3}}",
-    "format": "\n────────\n"
+    "color": "#{{A4}}",
+    "format": "\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n"
   },
   "item": {
-    "block_prefix": "• ",
-    "color": "#{{B4}}"
+    "block_prefix": "\u2022 ",
+    "color": "#{{B5}}"
   },
   "enumeration": {
     "block_prefix": ". ",
-    "color": "#{{B4}}"
+    "color": "#{{B5}}"
   },
   "task": {
     "ticked": "[x] ",
     "unticked": "[ ] ",
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "link": {
-    "color": "#{{B5}}",
+    "color": "#{{B6}}",
     "underline": true
   },
   "link_text": {
-    "color": "#{{D4}}",
+    "color": "#{{C7}}",
     "bold": true
   },
   "image": {
-    "color": "#{{B4}}",
+    "color": "#{{B5}}",
     "underline": true
   },
   "image_text": {
     "color": "#{{A5}}",
-    "format": "Image: {{.text}} →"
+    "format": "Image: {{.text}} \u2192"
   },
   "code": {
     "prefix": "\u00a0",
     "suffix": "\u00a0",
-    "color": "#{{D4}}",
+    "color": "#{{D7}}",
     "background_color": "#{{A1}}"
   },
   "code_block": {
-    "color": "#{{A6}}",
+    "color": "#{{C6}}",
     "margin": 2,
     "chroma": {
       "text": {
-        "color": "#{{A6}}"
+        "color": "#{{C6}}"
       },
       "error": {
         "color": "#{{C7}}",
         "background_color": "#{{B2}}"
       },
       "comment": {
-        "color": "#{{A3}}"
+        "color": "#{{A4}}"
       },
       "comment_preproc": {
-        "color": "#{{D3}}"
+        "color": "#{{A5}}"
       },
       "keyword": {
-        "color": "#{{D4}}",
+        "color": "#{{D6}}",
         "bold": true
       },
       "keyword_reserved": {
         "color": "#{{D5}}"
       },
       "keyword_namespace": {
-        "color": "#{{D4}}"
+        "color": "#{{D5}}"
       },
       "keyword_type": {
-        "color": "#{{B5}}"
+        "color": "#{{B6}}"
       },
       "operator": {
-        "color": "#{{A5}}"
-      },
-      "punctuation": {
-        "color": "#{{A4}}"
-      },
-      "name": {
         "color": "#{{A6}}"
       },
+      "punctuation": {
+        "color": "#{{A5}}"
+      },
+      "name": {
+        "color": "#{{C6}}"
+      },
       "name_builtin": {
-        "color": "#{{B5}}"
+        "color": "#{{B6}}"
       },
       "name_tag": {
-        "color": "#{{D4}}"
+        "color": "#{{D5}}"
       },
       "name_attribute": {
-        "color": "#{{B4}}"
+        "color": "#{{B5}}"
       },
       "name_class": {
         "color": "#{{C7}}",
@@ -160,49 +161,49 @@
         "color": "#{{D5}}"
       },
       "name_decorator": {
-        "color": "#{{D4}}"
+        "color": "#{{D6}}"
       },
       "name_exception": {
         "color": "#{{B2}}",
         "bold": true
       },
       "name_function": {
-        "color": "#{{B5}}"
+        "color": "#{{B6}}"
       },
       "name_other": {
-        "color": "#{{A6}}"
+        "color": "#{{C6}}"
       },
       "literal": {
-        "color": "#{{A6}}"
+        "color": "#{{C6}}"
       },
       "literal_number": {
-        "color": "#{{D3}}"
+        "color": "#{{D5}}"
       },
       "literal_date": {
-        "color": "#{{D3}}"
+        "color": "#{{D5}}"
       },
       "literal_string": {
-        "color": "#{{B5}}"
+        "color": "#{{B6}}"
       },
       "literal_string_escape": {
-        "color": "#{{B6}}"
+        "color": "#{{D7}}"
       },
       "generic_deleted": {
         "color": "#{{B2}}"
       },
       "generic_emph": {
-        "color": "#{{A6}}",
+        "color": "#{{C6}}",
         "italic": true
       },
       "generic_inserted": {
-        "color": "#{{D4}}"
+        "color": "#{{D5}}"
       },
       "generic_strong": {
         "color": "#{{C7}}",
         "bold": true
       },
       "generic_subheading": {
-        "color": "#{{A4}}"
+        "color": "#{{B6}}"
       },
       "background": {
         "background_color": "#{{A1}}"
@@ -210,21 +211,21 @@
     }
   },
   "table": {
-    "color": "#{{A6}}",
-    "center_separator": "┼",
-    "column_separator": "│",
-    "row_separator": "─"
+    "color": "#{{C6}}",
+    "center_separator": "\u253c",
+    "column_separator": "\u2502",
+    "row_separator": "\u2500"
   },
   "definition_list": {
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "definition_term": {
-    "color": "#{{B5}}",
+    "color": "#{{B6}}",
     "bold": true
   },
   "definition_description": {
     "block_prefix": "\n  ",
-    "color": "#{{A6}}"
+    "color": "#{{C6}}"
   },
   "html_block": {
     "color": "#{{A5}}"

@@ -1,0 +1,18 @@
+// Generated Base2Tone Zellij theme.
+// Hex values are converted to RGB integers by build.py.
+
+themes {
+    base2tone {
+        fg "#{{C6}}"
+        bg "#{{A0}}"
+        black "#{{A0}}"
+        red "#{{B2}}"
+        green "#{{D4}}"
+        yellow "#{{D6}}"
+        blue "#{{B4}}"
+        magenta "#{{B6}}"
+        cyan "#{{D5}}"
+        white "#{{C7}}"
+        orange "#{{D3}}"
+    }
+}

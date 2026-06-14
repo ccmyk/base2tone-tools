@@ -1,0 +1,8 @@
+name = "broot"
+template = "skin.hjson"
+output = "broot/base2tone.hjson"
+validator = "validate.py"
+
+[install]
+target = "broot/skins/base2tone.hjson"
+mode = "symlink"

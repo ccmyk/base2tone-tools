@@ -1,0 +1,32 @@
+# Generated Base2Tone Delta theme.
+# Included from ~/.gitconfig via:
+#   [include]
+#     path = ~/.config/delta/theme.gitconfig
+
+[delta]
+  syntax-theme = base2tone-current
+  plus-style = "syntax #{{A1}} #{{D4}}"
+  minus-style = "syntax #{{A1}} #{{B2}}"
+  zero-style = "syntax #{{A0}} #{{A6}}"
+
+  plus-emph-style = "syntax #{{D4}} #{{A0}}"
+  minus-emph-style = "syntax #{{B2}} #{{A0}}"
+
+  line-numbers-left-style = "#{{A4}}"
+  line-numbers-right-style = "#{{A4}}"
+  line-numbers-minus-style = "#{{B2}}"
+  line-numbers-plus-style = "#{{D4}}"
+  line-numbers-zero-style = "#{{A4}}"
+
+  file-style = "bold #{{C7}}"
+  file-decoration-style = "#{{A3}}"
+  hunk-header-style = "syntax bold #{{B5}}"
+  hunk-header-decoration-style = "#{{A3}}"
+  hunk-header-file-style = "bold #{{C7}}"
+  hunk-header-line-number-style = "#{{D5}}"
+
+  minus-non-emph-style = "#{{B2}}"
+  minus-empty-line-marker-style = "#{{B2}}"
+  plus-non-emph-style = "#{{D4}}"
+  plus-empty-line-marker-style = "#{{D4}}"
+  whitespace-error-style = "reverse #{{B2}}"

@@ -2,3 +2,7 @@ name = "glow"
 template = "template.json"
 output = "glow/style.json"
 validator = "validate.py"
+
+[install]
+target = "glow/styles/base2tone-current.json"
+mode = "symlink"

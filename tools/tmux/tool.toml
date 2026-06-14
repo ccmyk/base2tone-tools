@@ -2,3 +2,7 @@ name = "tmux"
 template = "template.conf"
 output = "tmux/theme.conf"
 validator = "validate.py"
+
+[install]
+target = "tmux/themes/base2tone.conf"
+mode = "symlink"

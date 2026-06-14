@@ -3,3 +3,13 @@ template = "template.yml"
 output = "vivid/theme.yml"
 postprocess = "build.py"
 validator = "validate.py"
+
+[[install]]
+source = "vivid/theme.yml"
+target = "vivid/theme.yml"
+mode = "symlink"
+
+[[install]]
+source = "vivid/ls-colors.zsh"
+target = "vivid/ls-colors.zsh"
+mode = "symlink"

@@ -2,3 +2,7 @@ name = "fastfetch"
 template = "template.jsonc"
 output = "fastfetch/theme.jsonc"
 validator = "validate.py"
+
+[install]
+target = "fastfetch/themes/base2tone.jsonc"
+mode = "symlink"
