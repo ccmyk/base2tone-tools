@@ -1,142 +1,182 @@
 # Base2Tone Tools
 
-Base2Tone Tools builds native themes and configuration fragments for
-command-line applications from the original 32-coordinate Base2Tone schemes.
+Base2Tone Tools is a compiler for the upstream Base2Tone palette system. It converts Base2Tone schemes into native configuration files for terminal tools, shells, prompts, file managers, and terminal workspace utilities.
 
-The project preserves the upstream coordinate system directly:
+It keeps the original Base2Tone coordinate system visible:
 
-    A0 A1 A2 A3 A4 A5 A6 A7
-    B0 B1 B2 B3 B4 B5 B6 B7
-    C0 C1 C2 C3 C4 C5 C6 C7
-    D0 D1 D2 D3 D4 D5 D6 D7
+```text
+A0 A1 A2 A3 A4 A5 A6 A7
+B0 B1 B2 B3 B4 B5 B6 B7
+C0 C1 C2 C3 C4 C5 C6 C7
+D0 D1 D2 D3 D4 D5 D6 D7
+```
 
-It does not introduce a shared semantic color dictionary.
+Tool templates use those coordinates directly. The project does not replace them with a global semantic layer such as `background`, `accent`, `success`, `warning`, or `danger`.
 
-Tool templates visibly assign Base2Tone coordinates to tool-native fields.
+## Supported tools
 
-## Architecture
+Current modules generate native config or theme fragments for:
 
-The project uses:
+- bat
+- broot
+- delta
+- eza
+- fastfetch
+- fast-syntax-highlighting
+- fzf
+- glow
+- Neovim
+- Starship
+- tmux
+- vivid / LS_COLORS
+- Yazi
+- Zellij
 
-- one thin command-line launcher;
-- one shared palette compiler;
-- one self-contained module per supported tool;
-- one active generated output set.
+Zed and Warp are separate projects, not modules in this repository.
 
-    Base2Tone scheme
-            ↓
-    bin/b2t-theme
-            ↓
-    lib/compiler.py
-            ↓
-    tools/*/tool.toml
-            ↓
-    tool-owned native templates
-            ↓
-    generated/current/
+## Quick start
 
-Each tool module owns its color mapping, documentation, generated output path,
-and any exceptional validation or post-processing behavior.
+List schemes:
 
-## Project structure
+```sh
+./bin/b2t-theme list
+```
 
-    base2tone-tools/
-    ├── bin/
-    │   └── b2t-theme
-    ├── lib/
-    │   └── compiler.py
-    ├── tools/
-    │   ├── eza/
-    │   │   ├── README.md
-    │   │   ├── template.yml
-    │   │   └── tool.toml
-    │   └── ...
-    ├── generated/
-    │   └── current/
-    ├── docs/
-    │   ├── ARCHITECTURE.md
-    │   ├── PALETTE.md
-    │   └── TOOLS.md
-    └── vendor/
-        └── Base2Tone/
+Validate a scheme:
 
-## Source of truth
+```sh
+./bin/b2t-theme validate drawbridge
+```
 
-Palette data comes from:
+Build generated output:
 
-    vendor/Base2Tone/db/schemes/base2tone-<scheme>.yml
+```sh
+./bin/b2t-theme build drawbridge
+```
 
-Each scheme must contain exactly 32 coordinates:
+Apply a scheme to configured install targets:
 
-    baseA0..baseA7
-    baseB0..baseB7
-    baseC0..baseC7
-    baseD0..baseD7
+```sh
+./bin/b2t-theme apply drawbridge
+```
 
-## Tool modules
+Test every scheme:
 
-A normal module contains:
-
-    tools/<tool>/
-    ├── README.md
-    ├── template.<native-extension>
-    └── tool.toml
-
-Example manifest:
-
-    name = "eza"
-    template = "template.yml"
-    output = "eza/theme.yml"
-
-The manifest contains operational metadata only.
-
-Color assignments remain visible in the native template:
-
-    directory:
-      foreground: "#{{B4}}"
-
-The compiler substitutes `{{B4}}` with the selected scheme's bare six-digit
-hexadecimal value. The template supplies any required `#`, escape sequence, or
-other surrounding syntax.
+```sh
+./bin/b2t-theme test
+```
 
 ## Generated output
 
-Normal builds retain only one active output set:
+Normal builds maintain one active output tree:
 
-    generated/current/
+```text
+generated/current/
+├── scheme
+├── bat/theme.conf
+├── broot/base2tone.hjson
+├── delta/theme.gitconfig
+├── eza/theme.yml
+├── fastfetch/theme.jsonc
+├── fsh/base2tone.ini
+├── fzf/colors.zsh
+├── glow/style.json
+├── nvim/current-theme.lua
+├── starship/palette.toml
+├── tmux/theme.conf
+├── vivid/theme.yml
+├── vivid/ls-colors.zsh
+├── yazi/theme.toml
+└── zellij/base2tone.kdl
+```
 
-Switching schemes replaces that directory only after the complete build
-succeeds.
+`generated/current/scheme` records the active scheme.
 
-Testing all schemes uses temporary directories and does not retain hundreds of
-generated files.
+## Project layout
 
-## Commands
+```text
+base2tone-tools/
+├── bin/
+│   └── b2t-theme
+├── docs/
+├── generated/
+│   └── current/
+├── lib/
+│   └── compiler.py
+├── tools/
+│   └── <tool>/
+│       ├── README.md
+│       ├── template.<native-extension>
+│       ├── tool.toml
+│       └── validate.py
+└── vendor/
+    └── Base2Tone/
+```
 
-Implemented commands:
+## Source of truth
 
-    b2t-theme list
-    b2t-theme validate <scheme>
-    b2t-theme build <scheme>
-    b2t-theme test
+Palette data comes from upstream Base2Tone scheme files:
 
-Planned lifecycle commands:
+```text
+vendor/Base2Tone/db/schemes/base2tone-<scheme>.yml
+```
 
-    b2t-theme apply <scheme>
-    b2t-theme current
-    b2t-theme status
+Each scheme must contain exactly 32 coordinates:
 
-## Dotfiles integration
+```text
+baseA0..baseA7
+baseB0..baseB7
+baseC0..baseC7
+baseD0..baseD7
+```
 
-This project remains separate from the dotfiles repository:
+## How it works
 
-    ~/development/base2tone-tools
-        compiler, modules, tests, and upstream Base2Tone data
+The build pipeline is:
 
-    ~/.dotfiles
-        installed active output used by applications
+```text
+Base2Tone scheme
+        ↓
+bin/b2t-theme
+        ↓
+lib/compiler.py
+        ↓
+tools/*/tool.toml
+        ↓
+tool-owned native templates
+        ↓
+generated/current/
+```
 
-A later explicit `apply` operation will build and validate everything before
-installing one active theme set into the dotfiles repository.
+Each tool module owns its native mapping. The compiler loads the selected palette, substitutes placeholders such as `{{B4}}`, runs validators or build hooks, and writes the active generated output.
 
-Ordinary builds will not modify dotfiles.
+## Tool modules
+
+A typical module contains:
+
+```text
+tools/eza/
+├── README.md
+├── template.yml
+├── tool.toml
+└── validate.py
+```
+
+A template keeps the coordinate assignment visible:
+
+```yaml
+directory:
+  foreground: "#{{B4}}"
+```
+
+The compiler replaces `{{B4}}` with the selected scheme's hex value. The native template owns surrounding syntax such as `#`, quotes, shell escaping, or tool-specific formatting.
+
+## More documentation
+
+See:
+
+```text
+PROJECT.md
+```
+
+for the full architecture, palette rules, module contract, validation model, installation model, per-tool notes, and roadmap.
